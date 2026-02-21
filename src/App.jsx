@@ -53,9 +53,9 @@ const DIMENSION_META = {
 };
 
 const FLAG_STYLES = {
-  sufficient: { bg: "#0d2b1a", border: "#1a6b3c", text: "#4ade80", dot: "#22c55e" },
-  limited: { bg: "#2b1f08", border: "#8a5a00", text: "#fbbf24", dot: "#f59e0b" },
-  not_addressed: { bg: "#2b0d0d", border: "#7a1a1a", text: "#f87171", dot: "#ef4444" },
+  sufficient: { bg: "#ecfdf5", border: "#86efac", text: "#166534", dot: "#22c55e" },
+  limited: { bg: "#fffbeb", border: "#fcd34d", text: "#92400e", dot: "#f59e0b" },
+  not_addressed: { bg: "#fef2f2", border: "#fca5a5", text: "#991b1b", dot: "#ef4444" },
 };
 
 const FLAG_LABEL = {
@@ -127,8 +127,8 @@ export default function MNVScorecard() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0a0c0f",
-        color: "#c8d4e0",
+        background: "#faf8f5",
+        color: "#3a3a3a",
         fontFamily: "'DM Mono', 'Courier New', monospace",
         padding: "0",
       }}
@@ -137,18 +137,18 @@ export default function MNVScorecard() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0a0c0f; }
-        ::-webkit-scrollbar-thumb { background: #2a3340; border-radius: 2px; }
+        ::-webkit-scrollbar-track { background: #f0ede8; }
+        ::-webkit-scrollbar-thumb { background: #c8c0b4; border-radius: 2px; }
         textarea { resize: none; }
-        textarea::placeholder { color: #3a4a5a; }
-        .dim-row { cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #141c24; }
-        .dim-row:hover { background: #111820 !important; }
-        .dim-row.expanded { background: #111820 !important; }
+        textarea::placeholder { color: #b0a898; }
+        .dim-row { cursor: pointer; transition: background 0.15s; border-bottom: 1px solid #e8e2da; }
+        .dim-row:hover { background: #f5f1ec !important; }
+        .dim-row.expanded { background: #f5f1ec !important; }
         .analyze-btn { transition: all 0.2s; }
-        .analyze-btn:hover:not(:disabled) { background: #d4e8ff !important; color: #0a0c0f !important; }
+        .analyze-btn:hover:not(:disabled) { background: #1a3a5c !important; color: #ffffff !important; }
         .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .example-btn { transition: all 0.15s; cursor: pointer; }
-        .example-btn:hover { border-color: #4a7fa5 !important; color: #a0c4e0 !important; }
+        .example-btn:hover { border-color: #7a9ab8 !important; color: #2a5070 !important; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .slide-in { animation: slideIn 0.3s ease forwards; }
@@ -158,11 +158,12 @@ export default function MNVScorecard() {
       {/* Header */}
       <div
         style={{
-          borderBottom: "1px solid #141c24",
+          borderBottom: "1px solid #e0d8ce",
           padding: "24px 32px",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          background: "#ffffff",
         }}
       >
         <div
@@ -170,7 +171,7 @@ export default function MNVScorecard() {
             fontFamily: "'Syne', sans-serif",
             fontSize: 22,
             fontWeight: 800,
-            color: "#e0ecf5",
+            color: "#1a2a3a",
             letterSpacing: -0.5,
           }}
         >
@@ -179,7 +180,7 @@ export default function MNVScorecard() {
         <div
           style={{
             fontSize: 11,
-            color: "#3a5068",
+            color: "#8a7e70",
             letterSpacing: 2,
             textTransform: "uppercase",
           }}
@@ -194,7 +195,7 @@ export default function MNVScorecard() {
           <div
             style={{
               fontSize: 11,
-              color: "#4a7090",
+              color: "#6a8aa8",
               letterSpacing: 2,
               textTransform: "uppercase",
               marginBottom: 8,
@@ -209,11 +210,11 @@ export default function MNVScorecard() {
             rows={7}
             style={{
               width: "100%",
-              background: "#080b0e",
-              border: "1px solid #1a2530",
+              background: "#ffffff",
+              border: "1px solid #d8d0c4",
               borderRadius: 4,
               padding: "16px",
-              color: "#c8d4e0",
+              color: "#3a3a3a",
               fontFamily: "'DM Mono', monospace",
               fontSize: 13,
               lineHeight: 1.6,
@@ -226,7 +227,7 @@ export default function MNVScorecard() {
             <span
               style={{
                 fontSize: 11,
-                color: "#3a5068",
+                color: "#8a7e70",
                 alignSelf: "center",
                 marginRight: 4,
               }}
@@ -240,11 +241,11 @@ export default function MNVScorecard() {
                 onClick={() => setText(ex.text)}
                 style={{
                   background: "transparent",
-                  border: "1px solid #1e2e3e",
+                  border: "1px solid #d0c8bc",
                   borderRadius: 3,
                   padding: "4px 10px",
                   fontSize: 11,
-                  color: "#5a7a9a",
+                  color: "#7a8e9e",
                   fontFamily: "'DM Mono', monospace",
                 }}
               >
@@ -259,8 +260,8 @@ export default function MNVScorecard() {
               onClick={analyze}
               disabled={loading || !input.trim()}
               style={{
-                background: "#b8d8f8",
-                color: "#0a0c0f",
+                background: "#2a5a8a",
+                color: "#ffffff",
                 border: "none",
                 borderRadius: 3,
                 padding: "10px 28px",
@@ -278,7 +279,7 @@ export default function MNVScorecard() {
 
         {/* Loading */}
         {loading && (
-          <div style={{ textAlign: "center", padding: "48px 0", color: "#3a5068" }}>
+          <div style={{ textAlign: "center", padding: "48px 0", color: "#8a7e70" }}>
             <div className="spinner" style={{ fontSize: 13, letterSpacing: 2 }}>
               ◈ ANALYZING M&V METHODOLOGY ◈
             </div>
@@ -289,11 +290,11 @@ export default function MNVScorecard() {
         {error && (
           <div
             style={{
-              background: "#1a0808",
-              border: "1px solid #4a1515",
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
               borderRadius: 4,
               padding: "12px 16px",
-              color: "#f87171",
+              color: "#991b1b",
               fontSize: 13,
               marginBottom: 16,
             }}
@@ -308,8 +309,8 @@ export default function MNVScorecard() {
             {/* Subject + Summary */}
             <div
               style={{
-                background: "#080d12",
-                border: "1px solid #141c24",
+                background: "#ffffff",
+                border: "1px solid #e0d8ce",
                 borderRadius: 4,
                 padding: "24px",
                 marginBottom: 16,
@@ -320,13 +321,13 @@ export default function MNVScorecard() {
                   fontFamily: "'Syne', sans-serif",
                   fontSize: 18,
                   fontWeight: 700,
-                  color: "#e0ecf5",
+                  color: "#1a2a3a",
                   marginBottom: 10,
                 }}
               >
                 {result.subject}
               </div>
-              <div style={{ fontSize: 13, lineHeight: 1.7, color: "#8aa4bc" }}>
+              <div style={{ fontSize: 13, lineHeight: 1.7, color: "#5a6a7a" }}>
                 {result.summary}
               </div>
               <div
@@ -342,7 +343,7 @@ export default function MNVScorecard() {
                   <span
                     style={{
                       fontSize: 11,
-                      color: "#3a5068",
+                      color: "#8a7e70",
                       textTransform: "uppercase",
                       letterSpacing: 1,
                     }}
@@ -351,12 +352,12 @@ export default function MNVScorecard() {
                   </span>
                   <span
                     style={{
-                      background: "#0d1e2e",
-                      border: "1px solid #1a4060",
+                      background: "#e8f0f8",
+                      border: "1px solid #b0cce0",
                       borderRadius: 3,
                       padding: "3px 10px",
                       fontSize: 12,
-                      color: "#7ab4e0",
+                      color: "#2a5a8a",
                       fontWeight: 500,
                     }}
                   >
@@ -365,11 +366,11 @@ export default function MNVScorecard() {
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   {[
-                    ["sufficient", "#22c55e"],
-                    ["limited", "#f59e0b"],
-                    ["not_addressed", "#ef4444"],
+                    ["sufficient", "#16a34a"],
+                    ["limited", "#d97706"],
+                    ["not_addressed", "#dc2626"],
                   ].map(([f, color]) => (
-                    <span key={f} style={{ fontSize: 11, color: "#5a7a9a" }}>
+                    <span key={f} style={{ fontSize: 11, color: "#6a7a8a" }}>
                       <span style={{ color, fontWeight: 600 }}>{flagCounts[f]}</span>{" "}
                       {FLAG_LABEL[f]}
                     </span>
@@ -381,9 +382,10 @@ export default function MNVScorecard() {
             {/* Dimension rows */}
             <div
               style={{
-                border: "1px solid #141c24",
+                border: "1px solid #e0d8ce",
                 borderRadius: 4,
                 overflow: "hidden",
+                background: "#ffffff",
               }}
             >
               {/* Header row */}
@@ -391,16 +393,16 @@ export default function MNVScorecard() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "28px 1fr 140px 120px",
-                  background: "#060a0e",
+                  background: "#f5f1ec",
                   padding: "8px 16px",
-                  borderBottom: "1px solid #141c24",
+                  borderBottom: "1px solid #e0d8ce",
                 }}
               >
                 <div />
                 <div
                   style={{
                     fontSize: 10,
-                    color: "#2a4055",
+                    color: "#8a7e70",
                     letterSpacing: 2,
                     textTransform: "uppercase",
                   }}
@@ -410,7 +412,7 @@ export default function MNVScorecard() {
                 <div
                   style={{
                     fontSize: 10,
-                    color: "#2a4055",
+                    color: "#8a7e70",
                     letterSpacing: 2,
                     textTransform: "uppercase",
                   }}
@@ -420,7 +422,7 @@ export default function MNVScorecard() {
                 <div
                   style={{
                     fontSize: 10,
-                    color: "#2a4055",
+                    color: "#8a7e70",
                     letterSpacing: 2,
                     textTransform: "uppercase",
                   }}
@@ -447,7 +449,7 @@ export default function MNVScorecard() {
                       }}
                     >
                       <div
-                        style={{ color: "#2a5070", fontSize: 14, alignSelf: "center" }}
+                        style={{ color: "#a0b8cc", fontSize: 14, alignSelf: "center" }}
                       >
                         {meta.icon}
                       </div>
@@ -455,7 +457,7 @@ export default function MNVScorecard() {
                         <div
                           style={{
                             fontSize: 12,
-                            color: "#7a9ab5",
+                            color: "#8a9aaa",
                             textTransform: "uppercase",
                             letterSpacing: 1,
                             marginBottom: 2,
@@ -466,7 +468,7 @@ export default function MNVScorecard() {
                         <div
                           style={{
                             fontSize: 13,
-                            color: "#c0d4e8",
+                            color: "#2a3a4a",
                             fontFamily: "'Syne', sans-serif",
                             fontWeight: 600,
                           }}
@@ -477,7 +479,7 @@ export default function MNVScorecard() {
                       <div
                         style={{
                           fontSize: 12,
-                          color: "#6a8aa5",
+                          color: "#7a8a9a",
                           alignSelf: "center",
                           paddingRight: 8,
                         }}
@@ -518,8 +520,8 @@ export default function MNVScorecard() {
                     {isExpanded && (
                       <div
                         style={{
-                          background: "#060a0e",
-                          borderBottom: "1px solid #141c24",
+                          background: "#f9f6f2",
+                          borderBottom: "1px solid #e0d8ce",
                           padding: "16px 16px 16px 44px",
                         }}
                       >
@@ -534,7 +536,7 @@ export default function MNVScorecard() {
                             <div
                               style={{
                                 fontSize: 10,
-                                color: "#2a4055",
+                                color: "#a09888",
                                 textTransform: "uppercase",
                                 letterSpacing: 2,
                                 marginBottom: 6,
@@ -545,7 +547,7 @@ export default function MNVScorecard() {
                             <div
                               style={{
                                 fontSize: 12,
-                                color: "#8aa4bc",
+                                color: "#5a6a7a",
                                 lineHeight: 1.65,
                               }}
                             >
@@ -556,7 +558,7 @@ export default function MNVScorecard() {
                             <div
                               style={{
                                 fontSize: 10,
-                                color: "#2a4055",
+                                color: "#a09888",
                                 textTransform: "uppercase",
                                 letterSpacing: 2,
                                 marginBottom: 6,
@@ -567,9 +569,9 @@ export default function MNVScorecard() {
                             <div
                               style={{
                                 fontSize: 12,
-                                color: "#8aa4bc",
+                                color: "#5a6a7a",
                                 lineHeight: 1.65,
-                                borderLeft: "2px solid #1a2a3a",
+                                borderLeft: "2px solid #d0c8bc",
                                 paddingLeft: 12,
                               }}
                             >
@@ -588,7 +590,7 @@ export default function MNVScorecard() {
               style={{
                 marginTop: 12,
                 fontSize: 11,
-                color: "#2a3a4a",
+                color: "#b0a898",
                 textAlign: "center",
               }}
             >
