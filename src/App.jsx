@@ -81,10 +81,37 @@ const EXAMPLES = [
 
 export default function MNVScorecard() {
   const [input, setText] = useState("");
+  const [urlInput, setUrlInput] = useState("");
+  const [fetching, setFetching] = useState(false);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [expandedDim, setExpandedDim] = useState(null);
+  const [fetchedSource, setFetchedSource] = useState(null);
+
+  async function fetchUrl() {
+    if (!urlInput.trim()) return;
+    setFetching(true);
+    setError(null);
+    setFetchedSource(null);
+    try {
+      const response = await fetch("/api/fetch-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlInput.trim() }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        setError(`URL fetch failed: ${data.error}`);
+      } else {
+        setText(data.text);
+        setFetchedSource(urlInput.trim());
+      }
+    } catch (e) {
+      setError("Could not fetch the URL. Check the address and try again.");
+    }
+    setFetching(false);
+  }
 
   async function analyze() {
     if (!input.trim()) return;
@@ -149,6 +176,7 @@ export default function MNVScorecard() {
         .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .example-btn { transition: all 0.15s; cursor: pointer; }
         .example-btn:hover { border-color: #7a9ab8 !important; color: #2a5070 !important; }
+        .fetch-btn:hover:not(:disabled) { background: #3a6a4a !important; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .slide-in { animation: slideIn 0.3s ease forwards; }
@@ -201,8 +229,58 @@ export default function MNVScorecard() {
               marginBottom: 8,
             }}
           >
-            Input — M&V Plan or Methodology Description
+            Input — M&V Plan, Methodology Description, or URL
           </div>
+
+          {/* URL Fetch Bar */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+            <input
+              type="text"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="Paste a URL to fetch M&V content (e.g., docs.wattcarbon.com/m-and-v/...)"
+              onKeyDown={(e) => e.key === "Enter" && fetchUrl()}
+              style={{
+                flex: 1,
+                background: "#ffffff",
+                border: "1px solid #d8d0c4",
+                borderRadius: 4,
+                padding: "10px 14px",
+                color: "#3a3a3a",
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 12,
+                outline: "none",
+              }}
+            />
+            <button
+              onClick={fetchUrl}
+              disabled={fetching || !urlInput.trim()}
+              style={{
+                background: fetching ? "#8a9aaa" : "#5a8a6a",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 3,
+                padding: "10px 20px",
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: 0.5,
+                cursor: fetching || !urlInput.trim() ? "not-allowed" : "pointer",
+                opacity: fetching || !urlInput.trim() ? 0.5 : 1,
+                transition: "all 0.2s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {fetching ? "Fetching..." : "Fetch URL"}
+            </button>
+          </div>
+
+          {fetchedSource && (
+            <div style={{ fontSize: 11, color: "#5a8a6a", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+              Content loaded from: {fetchedSource.length > 60 ? fetchedSource.slice(0, 57) + "..." : fetchedSource}
+            </div>
+          )}
           <textarea
             value={input}
             onChange={(e) => setText(e.target.value)}
