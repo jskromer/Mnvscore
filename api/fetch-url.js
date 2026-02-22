@@ -1,11 +1,54 @@
+function isUrlAllowed(urlString) {
+  let parsed;
+  try {
+    parsed = new URL(urlString);
+  } catch {
+    return false;
+  }
+
+  // Only allow https
+  if (parsed.protocol !== "https:") {
+    return false;
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Block localhost and loopback
+  if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1" || hostname === "[::1]") {
+    return false;
+  }
+
+  // Block cloud metadata endpoints
+  if (hostname === "169.254.169.254" || hostname === "metadata.google.internal") {
+    return false;
+  }
+
+  // Block private/reserved IP ranges
+  const parts = hostname.split(".");
+  if (parts.length === 4 && parts.every((p) => /^\d+$/.test(p))) {
+    const [a, b] = parts.map(Number);
+    if (a === 10) return false;              // 10.x.x.x
+    if (a === 172 && b >= 16 && b <= 31) return false; // 172.16-31.x.x
+    if (a === 192 && b === 168) return false; // 192.168.x.x
+    if (a === 0) return false;                // 0.x.x.x
+    if (a === 169 && b === 254) return false; // 169.254.x.x (link-local)
+  }
+
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { url } = req.body;
-  if (!url) {
+  if (!url || typeof url !== "string") {
     return res.status(400).json({ error: "URL is required" });
+  }
+
+  if (!isUrlAllowed(url)) {
+    return res.status(400).json({ error: "Invalid URL. Only public HTTPS URLs are allowed." });
   }
 
   try {
@@ -14,10 +57,12 @@ export default async function handler(req, res) {
         "User-Agent": "Mozilla/5.0 (compatible; MNVScorecard/1.0)",
         "Accept": "text/html,application/xhtml+xml,text/plain,application/pdf",
       },
+      redirect: "follow",
+      signal: AbortSignal.timeout(10000),
     });
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: `Failed to fetch URL: ${response.statusText}` });
+      return res.status(400).json({ error: "Could not fetch the URL. Check the address and try again." });
     }
 
     const contentType = response.headers.get("content-type") || "";
@@ -47,6 +92,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ text, contentType });
   } catch (e) {
-    return res.status(500).json({ error: `Failed to fetch: ${e.message}` });
+    return res.status(500).json({ error: "Failed to fetch the URL." });
   }
 }

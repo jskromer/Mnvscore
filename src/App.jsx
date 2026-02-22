@@ -122,14 +122,14 @@ export default function MNVScorecard() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: [{ role: "user", content: input }],
-        }),
+        body: JSON.stringify({ content: input }),
       });
       const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Analysis request failed. Please try again.");
+        setLoading(false);
+        return;
+      }
       const text = data.content?.map((b) => b.text || "").join("") || "";
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
