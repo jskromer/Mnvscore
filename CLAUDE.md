@@ -18,7 +18,7 @@ An AI-powered Measurement & Verification characterization tool that analyzes M&V
 ```
 src/App.jsx          — Main React component (entire UI + logic)
 src/main.jsx         — React entry point
-api/analyze.js       — Vercel serverless proxy to Anthropic API
+api/analyze.js       — Vercel serverless API (hardcodes model/prompt server-side)
 api/fetch-url.js     — Vercel serverless URL content fetcher
 index.html           — Vite HTML entry
 vercel.json          — Vercel routing config
@@ -30,7 +30,9 @@ vercel.json          — Vercel routing config
 - Fonts: DM Mono (body) + Syne (headings) via Google Fonts
 - Color theme: Light cream (#faf8f5) background with white cards, warm tan accents, navy blue (#2a5a8a) primary buttons
 - The app calls `/api/analyze` which proxies to Anthropic's API server-side (avoids CORS + keeps API key secure)
+- The model, system prompt, and max_tokens are hardcoded server-side in `api/analyze.js` — the client only sends `{ content: "..." }`
 - URL fetch feature: `/api/fetch-url` strips HTML and returns plain text for analysis
+- URL fetch enforces HTTPS-only, blocks private IPs and cloud metadata endpoints (SSRF protection), and has a 10s timeout
 
 ## Environment Variables (Vercel)
 - `ANTHROPIC_API_KEY` — required, set in Vercel project settings
@@ -65,4 +67,5 @@ Key industry references:
 - Owner: Steve Kromer (jskromer on GitHub, steering committee member of OpenEAC Alliance)
 - The tool is designed for M&V professionals evaluating vendor methodologies
 - Example inputs include WattCarbon, Demand Response baselines, and IPMVP Option B plans
-- The system prompt in App.jsx defines the JSON schema Claude must return
+- The system prompt and JSON schema are defined server-side in `api/analyze.js` (moved from App.jsx for security)
+- Input is validated and capped at 15,000 characters server-side
