@@ -100,6 +100,19 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+
+    // Parse the inner JSON string, recompute scores, write back
+    const textBlock = data.content?.[0]?.text;
+    if (textBlock) {
+      try {
+        const parsed = JSON.parse(textBlock.replace(/```json|```/g, "").trim());
+        recomputeScores(parsed);
+        data.content[0].text = JSON.stringify(parsed);
+      } catch (_) {
+        // If inner JSON parse fails, return as-is
+      }
+    }
+
     return res.status(response.status).json(data);
   } catch (e) {
     return res.status(500).json({ error: "API request failed" });
