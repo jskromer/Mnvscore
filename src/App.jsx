@@ -279,7 +279,8 @@ export default function MNVScorecard() {
       setText(text);
       setPdfSource(file.name);
     } catch (err) {
-      setError("Could not read PDF. The file may be corrupted or password-protected.");
+      console.error("PDF upload error:", err);
+      setError(`Could not read PDF: ${err.message || "Unknown error"}`);
     }
     setPdfLoading(false);
     if (pdfInputRef.current) pdfInputRef.current.value = "";
