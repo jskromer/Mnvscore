@@ -1,17 +1,18 @@
-// extract-pdf.js
-// Usage: node extract-pdf.js path/to/plan.pdf
+// extract-pdf.cjs
+// Usage: node extract-pdf.cjs path/to/plan.pdf
 
 const fs = require('fs');
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 
 const MAX_CHARS = 15000;
 
 async function extractPlan(filePath) {
   console.log(`\nReading: ${filePath}\n`);
-  
+
   const buffer = fs.readFileSync(filePath);
-  const data = await pdfParse(buffer);
-  
+  const parser = new PDFParse({ data: new Uint8Array(buffer) });
+  const data = await parser.getText();
+
   // Clean extraction artifacts
   let text = data.text
     .replace(/\f/g, '\n')                    // form feeds
@@ -20,10 +21,10 @@ async function extractPlan(filePath) {
     .replace(/([a-z])-\n([a-z])/g, '$1$2')   // hyphenated line breaks
     .trim();
 
-  console.log(`Pages: ${data.numpages}`);
+  console.log(`Pages: ${data.total}`);
   console.log(`Raw characters: ${data.text.length}`);
   console.log(`Cleaned characters: ${text.length}`);
-  
+
   if (text.length > MAX_CHARS) {
     const original = text.length;
     text = text.substring(0, MAX_CHARS);
@@ -49,18 +50,20 @@ async function extractPlan(filePath) {
   console.log(text.substring(0, 500));
   console.log(`\n--- Last 300 characters ---\n`);
   console.log(text.substring(text.length - 300));
-  
+
   // Save extracted text
   const outPath = filePath.replace('.pdf', '_extracted.txt');
   fs.writeFileSync(outPath, text);
   console.log(`\n✓ Saved to: ${outPath}`);
   console.log(`  Ready to paste into the Scorecard at https://mnvscore.vercel.app\n`);
+
+  await parser.destroy();
 }
 
 // Run
 const filePath = process.argv[2];
 if (!filePath) {
-  console.log('Usage: node extract-pdf.js <path-to-pdf>');
+  console.log('Usage: node extract-pdf.cjs <path-to-pdf>');
   process.exit(1);
 }
 if (!fs.existsSync(filePath)) {

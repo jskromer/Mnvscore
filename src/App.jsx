@@ -1,11 +1,9 @@
 import { useState, useRef } from "react";
 import ScoringExplainer from "./ScoringExplainer";
 import * as pdfjsLib from "pdfjs-dist";
+import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.mjs",
-  import.meta.url
-).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 const BUILD_TIMESTAMP = new Date().toLocaleString("en-US", {
   year: "numeric",
