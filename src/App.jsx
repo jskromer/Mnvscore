@@ -1,5 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ScoringExplainer from "./ScoringExplainer";
+import * as pdfjsLib from "pdfjs-dist";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.mjs",
+  import.meta.url
+).toString();
 
 const BUILD_TIMESTAMP = new Date().toLocaleString("en-US", {
   year: "numeric",
@@ -232,12 +238,61 @@ export default function MNVScorecard() {
   const [expandedElement, setExpandedElement] = useState(null);
   const [showExplainer, setShowExplainer] = useState(false);
   const [explainerTab, setExplainerTab] = useState("overview");
+  const [pdfSource, setPdfSource] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const pdfInputRef = useRef(null);
+
+  const MAX_PDF_CHARS = 15000;
+
+  async function handlePdfUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPdfLoading(true);
+    setError(null);
+    setFetchedSource(null);
+    setPdfSource(null);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        pages.push(content.items.map((item) => item.str).join(" "));
+      }
+      let text = pages
+        .join("\n\n")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/([a-z])-\n([a-z])/g, "$1$2")
+        .trim();
+      if (text.length < 100) {
+        setError("Very little text extracted. This PDF may be scanned (image-only) with no text layer.");
+        setPdfLoading(false);
+        return;
+      }
+      if (text.length > MAX_PDF_CHARS) {
+        text = text.substring(0, MAX_PDF_CHARS);
+        const lastPeriod = text.lastIndexOf(".");
+        if (lastPeriod > MAX_PDF_CHARS * 0.9) {
+          text = text.substring(0, lastPeriod + 1);
+        }
+      }
+      setText(text);
+      setPdfSource(file.name);
+    } catch (err) {
+      setError("Could not read PDF. The file may be corrupted or password-protected.");
+    }
+    setPdfLoading(false);
+    if (pdfInputRef.current) pdfInputRef.current.value = "";
+  }
 
   async function fetchUrl() {
     if (!urlInput.trim()) return;
     setFetching(true);
     setError(null);
     setFetchedSource(null);
+    setPdfSource(null);
     try {
       const response = await fetch("/api/fetch-url", {
         method: "POST",
@@ -526,8 +581,9 @@ export default function MNVScorecard() {
 
                 <h3>Input Options</h3>
                 <p>
-                  You can paste M&V plan text directly, use <strong>Fetch URL</strong> to extract content
-                  from a web page, or try the built-in examples. Input is capped at 15,000 characters.
+                  You can paste M&V plan text directly, use <strong>Upload PDF</strong> to extract text
+                  from a PDF document, use <strong>Fetch URL</strong> to extract content from a web page,
+                  or try the built-in examples. Input is capped at 15,000 characters.
                 </p>
               </>
             )}
@@ -552,7 +608,7 @@ export default function MNVScorecard() {
               marginBottom: 8,
             }}
           >
-            Input — M&V Plan, Methodology Description, or URL
+            Input — M&V Plan, Methodology Description, PDF, or URL
           </div>
 
           {/* URL Fetch Bar */}
@@ -578,6 +634,7 @@ export default function MNVScorecard() {
             <button
               onClick={fetchUrl}
               disabled={fetching || !urlInput.trim()}
+              className="fetch-btn"
               style={{
                 background: fetching ? "#8a9aaa" : "#5a8a6a",
                 color: "#ffffff",
@@ -596,12 +653,43 @@ export default function MNVScorecard() {
             >
               {fetching ? "Fetching..." : "Fetch URL"}
             </button>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={handlePdfUpload}
+              style={{ display: "none" }}
+            />
+            <button
+              onClick={() => pdfInputRef.current?.click()}
+              disabled={pdfLoading}
+              className="fetch-btn"
+              style={{
+                background: pdfLoading ? "#8a9aaa" : "#5a8a6a",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: 3,
+                padding: "10px 20px",
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: 0.5,
+                cursor: pdfLoading ? "not-allowed" : "pointer",
+                opacity: pdfLoading ? 0.5 : 1,
+                transition: "all 0.2s",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {pdfLoading ? "Reading..." : "Upload PDF"}
+            </button>
           </div>
 
-          {fetchedSource && (
+          {(fetchedSource || pdfSource) && (
             <div style={{ fontSize: 11, color: "#5a8a6a", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
-              Content loaded from: {fetchedSource.length > 60 ? fetchedSource.slice(0, 57) + "..." : fetchedSource}
+              {pdfSource
+                ? `PDF loaded: ${pdfSource}`
+                : `Content loaded from: ${fetchedSource.length > 60 ? fetchedSource.slice(0, 57) + "..." : fetchedSource}`}
             </div>
           )}
           <textarea

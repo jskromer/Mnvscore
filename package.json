@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^5.5.207",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
