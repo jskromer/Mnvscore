@@ -1,5 +1,14 @@
 import { useState } from "react";
 
+const BUILD_TIMESTAMP = new Date().toLocaleString("en-US", {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZoneName: "short",
+});
+
 const SYSTEM_PROMPT = `You are an expert in Measurement & Verification (M&V) methodology for energy efficiency and demand-side management programs.
 
 When given an M&V plan, methodology description, or vendor capability statement, you will analyze it across 8 dimensions:
@@ -216,6 +225,7 @@ export default function MNVScorecard() {
   const [complianceError, setComplianceError] = useState(null);
   const [expandedPrinciple, setExpandedPrinciple] = useState(null);
   const [expandedElement, setExpandedElement] = useState(null);
+  const [showExplainer, setShowExplainer] = useState(false);
 
   async function fetchUrl() {
     if (!urlInput.trim()) return;
@@ -348,6 +358,17 @@ export default function MNVScorecard() {
         @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .slide-in { animation: slideIn 0.3s ease forwards; }
         .spinner { animation: pulse 1.2s ease-in-out infinite; }
+        .explainer-link { color: #6a8aa8; text-decoration: none; cursor: pointer; transition: color 0.15s; }
+        .explainer-link:hover { color: #2a5a8a; text-decoration: underline; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+        .modal-body { background: #ffffff; border-radius: 6px; max-width: 680px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 32px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+        .modal-body h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: #1a2a3a; margin-bottom: 16px; }
+        .modal-body h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600; color: #2a5a8a; margin: 20px 0 8px 0; }
+        .modal-body p { font-size: 13px; line-height: 1.7; color: #5a6a7a; margin-bottom: 10px; }
+        .modal-body ul { font-size: 13px; line-height: 1.7; color: #5a6a7a; margin: 0 0 10px 20px; }
+        .modal-body li { margin-bottom: 4px; }
+        .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 18px; color: #8a7e70; cursor: pointer; padding: 4px 8px; }
+        .modal-close:hover { color: #1a2a3a; }
       `}</style>
 
       {/* Header */}
@@ -361,28 +382,122 @@ export default function MNVScorecard() {
           background: "#ffffff",
         }}
       >
-        <div
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: 22,
-            fontWeight: 800,
-            color: "#1a2a3a",
-            letterSpacing: -0.5,
-          }}
-        >
-          M&V Scorecard
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 22,
+              fontWeight: 800,
+              color: "#1a2a3a",
+              letterSpacing: -0.5,
+            }}
+          >
+            M&V Scorecard
+          </div>
+          <span
+            className="explainer-link"
+            onClick={() => setShowExplainer(true)}
+            style={{ fontSize: 11, letterSpacing: 1 }}
+          >
+            How It Works
+          </span>
         </div>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#8a7e70",
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          Measurement & Verification Characterization Tool
+        <div style={{ textAlign: "right" }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#8a7e70",
+              letterSpacing: 2,
+              textTransform: "uppercase",
+            }}
+          >
+            Measurement & Verification Characterization Tool
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              color: "#b0a898",
+              marginTop: 4,
+            }}
+          >
+            Built {BUILD_TIMESTAMP}
+          </div>
         </div>
       </div>
+
+      {/* Explainer Modal */}
+      {showExplainer && (
+        <div className="modal-overlay" onClick={() => setShowExplainer(false)}>
+          <div className="modal-body" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowExplainer(false)}>
+              {"\u2715"}
+            </button>
+            <h2>How the M&V Scorecard Works</h2>
+            <p>
+              The M&V Scorecard evaluates Measurement & Verification plans in two stages,
+              giving you both a structural characterization and a detailed quality evaluation.
+            </p>
+
+            <h3>Stage 1: Characterization</h3>
+            <p>
+              Click <strong>Generate Scorecard</strong> to characterize your M&V plan across 8 dimensions:
+            </p>
+            <ul>
+              <li><strong>Measurement Method</strong> — what measurement approach is used</li>
+              <li><strong>Boundary & Scope</strong> — the measurement boundary definition</li>
+              <li><strong>Duration & Cadence</strong> — how long and how often measurements occur</li>
+              <li><strong>Use Case Fit</strong> — what the approach is best suited for</li>
+              <li><strong>Savings Isolation</strong> — ability to attribute savings to specific measures</li>
+              <li><strong>Interactive Effects</strong> — whether cross-system interactions are captured</li>
+              <li><strong>Baseline Robustness</strong> — quality of baseline construction</li>
+              <li><strong>Uncertainty Quantification</strong> — whether uncertainty is quantified</li>
+            </ul>
+            <p>
+              Each dimension receives a status: <strong>Sufficient</strong>, <strong>Limited</strong>,
+              or <strong>Not Addressed</strong>. Click any row to see the detail and structural implication.
+            </p>
+
+            <h3>Stage 2: Quality Evaluation</h3>
+            <p>
+              After characterization, click <strong>Run Evaluation</strong> to score the plan against
+              6 universal M&V quality principles (26 criteria total) and check for 11 structural elements.
+            </p>
+            <p><strong>Quality Principles</strong> — each scored 0-100:</p>
+            <ul>
+              <li><strong>Accuracy</strong> — results close to true savings value, with managed uncertainty</li>
+              <li><strong>Completeness</strong> — all significant energy effects accounted for</li>
+              <li><strong>Conservativeness</strong> — assumptions understate rather than overstate savings</li>
+              <li><strong>Consistency</strong> — same methods across baseline and reporting periods</li>
+              <li><strong>Relevance</strong> — approach proportional to project size and risk</li>
+              <li><strong>Transparency</strong> — sufficient detail for independent review and replication</li>
+            </ul>
+            <p>
+              The <strong>composite score</strong> is the average of the 6 principle scores. The radar
+              chart visualizes the balance across principles. Expand any principle to see individual
+              criteria with evidence and gaps.
+            </p>
+            <p><strong>Plan Structural Completeness</strong> checks for 11 essential plan elements
+              (baseline definition, reporting period, measurement boundary, etc.). Each is scored as
+              Present (2), Partial (1), or Missing (0), summed into a structural index with a percentage.
+            </p>
+
+            <h3>Scoring Integrity</h3>
+            <p>
+              All numerical scores are recomputed server-side after the AI evaluation. Criterion
+              scores are calculated deterministically as weight {"\u00D7"} status (met=1.0, partial=0.5,
+              not met=0.0), principle scores as the sum of their criteria, and the composite as the
+              average of the 6 principles. This eliminates any arithmetic inconsistencies from the
+              language model.
+            </p>
+
+            <h3>Input Options</h3>
+            <p>
+              You can paste M&V plan text directly, use <strong>Fetch URL</strong> to extract content
+              from a web page, or try the built-in examples. Input is capped at 15,000 characters.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 32px" }}>
         {/* Input Panel */}
