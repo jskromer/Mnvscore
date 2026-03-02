@@ -1,5 +1,8 @@
 {
   "functions": {
+    "api/analyze.js": {
+      "maxDuration": 60
+    },
     "api/compliance.js": {
       "maxDuration": 60
     }
