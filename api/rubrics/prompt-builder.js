@@ -1,13 +1,8 @@
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { createRequire } from "module";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-function loadJSON(filename) {
-  const filepath = join(__dirname, filename);
-  return JSON.parse(readFileSync(filepath, "utf-8"));
-}
+const require = createRequire(import.meta.url);
+const principlesRubric = require("./mv-principles-v1.json");
+const planChecklist = require("./plan-checklist-v1.json");
 
 function buildPrinciplesSection(rubric) {
   let section = `## AXIS 1: M&V Quality Principles\n\n`;
@@ -99,8 +94,8 @@ function buildResponseSchema(rubric, checklist) {
 }
 
 export function buildSystemPrompt() {
-  const rubric = loadJSON("mv-principles-v1.json");
-  const checklist = loadJSON("plan-checklist-v1.json");
+  const rubric = principlesRubric;
+  const checklist = planChecklist;
 
   let prompt = `You are an expert evaluator of Measurement & Verification (M&V) plans for energy efficiency and demand-side management programs.
 

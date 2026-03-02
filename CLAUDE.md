@@ -16,12 +16,16 @@ An AI-powered Measurement & Verification characterization tool that analyzes M&V
 
 ## Project Structure
 ```
-src/App.jsx          — Main React component (entire UI + logic)
-src/main.jsx         — React entry point
-api/analyze.js       — Vercel serverless API (hardcodes model/prompt server-side)
-api/fetch-url.js     — Vercel serverless URL content fetcher
-index.html           — Vite HTML entry
-vercel.json          — Vercel routing config
+src/App.jsx                      — Main React component (entire UI + logic)
+src/main.jsx                     — React entry point
+api/analyze.js                   — Vercel serverless API: 8-dimension characterization
+api/compliance.js                — Vercel serverless API: compliance evaluation (6 principles + 11-element checklist)
+api/fetch-url.js                 — Vercel serverless URL content fetcher
+api/rubrics/mv-principles-v1.json   — 6-principle scoring rubric (26 criteria)
+api/rubrics/plan-checklist-v1.json  — Plan completeness checklist (11 elements)
+api/rubrics/prompt-builder.js       — Constructs system prompt from rubric JSON
+index.html                       — Vite HTML entry
+vercel.json                      — Vercel routing config
 ```
 
 ## Architecture
@@ -33,6 +37,7 @@ vercel.json          — Vercel routing config
 - The model, system prompt, and max_tokens are hardcoded server-side in `api/analyze.js` — the client only sends `{ content: "..." }`
 - URL fetch feature: `/api/fetch-url` strips HTML and returns plain text for analysis
 - URL fetch enforces HTTPS-only, blocks private IPs and cloud metadata endpoints (SSRF protection), and has a 10s timeout
+- **Compliance endpoint** (`/api/compliance`): Evaluates M&V plans against 6 quality principles (26 criteria) and 11 structural completeness elements. Rubrics are stored as versioned JSON in `api/rubrics/` and the system prompt is built dynamically by `prompt-builder.js`. Same input format as `/api/analyze` (`{ content: "..." }`), but returns a richer response with numerical scores. Uses 4000 max_tokens (vs 1000 for characterization).
 
 ## Environment Variables (Vercel)
 - `ANTHROPIC_API_KEY` — required, set in Vercel project settings
