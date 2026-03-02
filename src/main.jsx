@@ -1,3 +1,4 @@
+import "./polyfills.js";
 import { createRoot } from "react-dom/client";
 import MNVScorecard from "./App.jsx";
 
