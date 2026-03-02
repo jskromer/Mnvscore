@@ -1,0 +1,230 @@
+{
+  "schema_version": "1.0",
+  "name": "M&V Quality Principles",
+  "description": "Six universal principles for evaluating M&V plan quality. Protocol-neutral best practices applicable to any rigorous M&V plan.",
+  "scoring": {
+    "met": 1.0,
+    "partial": 0.5,
+    "not_met": 0.0
+  },
+  "principles": {
+    "accuracy": {
+      "name": "Accuracy",
+      "description": "The M&V plan produces results that are close to the true value of savings, with known and managed uncertainty.",
+      "criteria": {
+        "acc_boundary": {
+          "name": "Measurement boundary defined",
+          "weight": 20,
+          "met": "The measurement boundary is explicitly defined, specifying which systems, equipment, and energy flows are included and excluded.",
+          "partial": "A measurement boundary is implied or partially described, but not all inclusions/exclusions are explicit.",
+          "not_met": "No measurement boundary is defined or discernible from the plan."
+        },
+        "acc_uncertainty": {
+          "name": "Uncertainty quantified",
+          "weight": 25,
+          "met": "Uncertainty is quantified with numerical bounds (e.g., confidence intervals, percent error) and the methodology for estimating uncertainty is described.",
+          "partial": "Uncertainty is acknowledged or discussed qualitatively but not quantified with numerical bounds.",
+          "not_met": "Uncertainty is not mentioned or addressed in the plan."
+        },
+        "acc_residual": {
+          "name": "Model residual analysis documented",
+          "weight": 25,
+          "met": "Model residuals or goodness-of-fit metrics (CV-RMSE, NMBE, R², etc.) are specified with acceptance thresholds.",
+          "partial": "Model fit is discussed but specific metrics or acceptance criteria are not provided.",
+          "not_met": "No mention of model residuals, goodness-of-fit, or model validation."
+        },
+        "acc_calibration": {
+          "name": "Instrument accuracy and calibration",
+          "weight": 15,
+          "met": "Instrument accuracy classes are specified and calibration schedules or standards are documented.",
+          "partial": "Instruments are mentioned but accuracy classes or calibration requirements are incomplete.",
+          "not_met": "No discussion of instrument accuracy or calibration."
+        },
+        "acc_data_sufficiency": {
+          "name": "Data sufficiency justified",
+          "weight": 15,
+          "met": "The plan justifies the amount of data collected (duration, frequency, sample size) relative to the analysis requirements.",
+          "partial": "Data collection is described but the sufficiency of the data for the intended analysis is not justified.",
+          "not_met": "No justification for data quantity or sufficiency."
+        }
+      }
+    },
+    "completeness": {
+      "name": "Completeness",
+      "description": "The M&V plan accounts for all significant energy effects, including those outside the primary measure.",
+      "criteria": {
+        "comp_energy_streams": {
+          "name": "All energy streams accounted for",
+          "weight": 25,
+          "met": "All relevant energy streams (electricity, gas, steam, chilled water, etc.) are identified and their treatment in the analysis is specified.",
+          "partial": "Primary energy streams are identified but secondary or auxiliary streams are not addressed.",
+          "not_met": "Energy streams are not systematically identified or accounted for."
+        },
+        "comp_adjustments": {
+          "name": "Adjustments explicitly defined",
+          "weight": 25,
+          "met": "Both routine and non-routine adjustments are explicitly defined, including triggers, methods, and responsible parties.",
+          "partial": "Some adjustments are mentioned but the plan does not fully distinguish routine from non-routine or lacks detail on methods.",
+          "not_met": "Adjustments are not defined or addressed."
+        },
+        "comp_baseline_period": {
+          "name": "Baseline period justified",
+          "weight": 20,
+          "met": "The baseline period is specified with start/end dates, and the choice of period is justified (e.g., representative operations, data availability).",
+          "partial": "A baseline period is stated but the rationale for its selection is not provided.",
+          "not_met": "No baseline period is specified."
+        },
+        "comp_interactive": {
+          "name": "Interactive effects addressed",
+          "weight": 15,
+          "met": "Interactive effects between measures or systems (e.g., lighting-HVAC interactions) are explicitly identified and their treatment is described.",
+          "partial": "Interactive effects are acknowledged but not quantified or their treatment is vague.",
+          "not_met": "Interactive effects are not mentioned."
+        },
+        "comp_cost_avoidance": {
+          "name": "Cost vs energy savings distinguished",
+          "weight": 15,
+          "met": "The plan clearly distinguishes between energy savings (physical units) and cost avoidance (monetary), specifying how each is calculated.",
+          "partial": "Both energy and cost savings are mentioned but the distinction or calculation methodology is unclear.",
+          "not_met": "No distinction is made between energy savings and cost avoidance."
+        }
+      }
+    },
+    "conservativeness": {
+      "name": "Conservativeness",
+      "description": "When uncertainty exists, the M&V plan adopts assumptions that tend to understate rather than overstate savings.",
+      "criteria": {
+        "cons_assumptions": {
+          "name": "Conservative assumptions documented",
+          "weight": 35,
+          "met": "Key assumptions are documented and explicitly stated to err on the side of understating savings where uncertainty exists.",
+          "partial": "Assumptions are documented but their conservative or non-conservative nature is not discussed.",
+          "not_met": "Assumptions are not documented."
+        },
+        "cons_bias_direction": {
+          "name": "Bias direction stated",
+          "weight": 30,
+          "met": "The plan explicitly states the expected direction of bias in savings estimates and explains which party bears the risk.",
+          "partial": "Bias is acknowledged but the direction or risk allocation is not explicit.",
+          "not_met": "No discussion of bias direction or risk allocation."
+        },
+        "cons_stipulated": {
+          "name": "Stipulated values justified conservatively",
+          "weight": 35,
+          "met": "Any stipulated (assumed rather than measured) values are justified with conservative reasoning, and the impact of the stipulation on savings is bounded.",
+          "partial": "Stipulated values are present with some justification but conservativeness is not explicitly demonstrated.",
+          "not_met": "Stipulated values are used without justification, or conservativeness of stipulations is not addressed."
+        }
+      }
+    },
+    "consistency": {
+      "name": "Consistency",
+      "description": "The M&V plan applies the same methods, terms, and procedures across baseline and reporting periods.",
+      "criteria": {
+        "cst_method_match": {
+          "name": "Methods consistent across periods",
+          "weight": 35,
+          "met": "The same measurement methods, models, and calculation procedures are applied to both baseline and reporting periods, or any changes are documented and justified.",
+          "partial": "Methods appear similar across periods but consistency is not explicitly confirmed or documented.",
+          "not_met": "Different methods are used across periods without justification, or consistency is not addressed."
+        },
+        "cst_terminology": {
+          "name": "Standard M&V terminology used",
+          "weight": 25,
+          "met": "The plan uses standard M&V terminology consistently (e.g., baseline, reporting period, routine adjustments, measurement boundary).",
+          "partial": "Some standard terms are used but terminology is inconsistent or non-standard terms are used without definition.",
+          "not_met": "Terminology is non-standard or inconsistent throughout."
+        },
+        "cst_reporting_freq": {
+          "name": "Reporting frequency consistent",
+          "weight": 20,
+          "met": "Reporting intervals are defined and consistent with data collection frequency and contract requirements.",
+          "partial": "Reporting frequency is mentioned but not clearly aligned with data collection or contract terms.",
+          "not_met": "No reporting frequency is specified."
+        },
+        "cst_normalization": {
+          "name": "Normalization applied consistently",
+          "weight": 20,
+          "met": "Normalization variables and methods are applied consistently across baseline and reporting periods.",
+          "partial": "Normalization is mentioned but consistency of application across periods is not confirmed.",
+          "not_met": "Normalization is not addressed or is applied inconsistently."
+        }
+      }
+    },
+    "relevance": {
+      "name": "Relevance",
+      "description": "The M&V approach is appropriate for the project's size, complexity, risk, and stakeholder needs.",
+      "criteria": {
+        "rel_option_justified": {
+          "name": "M&V approach selection justified",
+          "weight": 30,
+          "met": "The chosen M&V approach (e.g., Option A/B/C/D or equivalent method) is explicitly justified based on project characteristics such as measure type, risk, and cost.",
+          "partial": "An M&V approach is stated but the rationale for its selection is incomplete or generic.",
+          "not_met": "No justification is provided for the M&V approach selection."
+        },
+        "rel_scope_match": {
+          "name": "M&V scope proportional to project",
+          "weight": 25,
+          "met": "The M&V effort (cost, complexity, rigor) is proportional to the project's savings value and risk level.",
+          "partial": "M&V scope is described but proportionality to project value/risk is not explicitly addressed.",
+          "not_met": "M&V scope appears disproportionate to the project or proportionality is not discussed."
+        },
+        "rel_ecm_coverage": {
+          "name": "All ECMs covered by M&V plan",
+          "weight": 25,
+          "met": "Every energy conservation measure (ECM) in the project is addressed by the M&V plan with a specified approach.",
+          "partial": "Most ECMs are covered but some are missing or coverage is ambiguous.",
+          "not_met": "Significant ECMs are not covered by the M&V plan."
+        },
+        "rel_stakeholder": {
+          "name": "Stakeholder reporting needs addressed",
+          "weight": 20,
+          "met": "The plan identifies stakeholder reporting needs and describes how M&V results will be communicated to each audience.",
+          "partial": "Reporting is described but specific stakeholder needs are not identified or addressed.",
+          "not_met": "Stakeholder reporting needs are not discussed."
+        }
+      }
+    },
+    "transparency": {
+      "name": "Transparency",
+      "description": "The M&V plan provides sufficient detail for independent review and replication of results.",
+      "criteria": {
+        "trans_model_spec": {
+          "name": "Model specification disclosed",
+          "weight": 25,
+          "met": "The mathematical model (regression form, variables, degrees of freedom, etc.) is fully specified and documented.",
+          "partial": "A modeling approach is described but the full specification (variables, functional form) is incomplete.",
+          "not_met": "No model specification is provided."
+        },
+        "trans_data_cleaning": {
+          "name": "Data cleaning rules documented",
+          "weight": 25,
+          "met": "Data screening and cleaning procedures are documented, including rules for identifying and handling outliers, missing data, and anomalies.",
+          "partial": "Data cleaning is mentioned but specific rules or procedures are not fully documented.",
+          "not_met": "No data cleaning procedures are documented."
+        },
+        "trans_exclusions": {
+          "name": "Excluded data explained",
+          "weight": 20,
+          "met": "Any excluded data points or periods are identified with documented rationale for exclusion.",
+          "partial": "Some exclusions are noted but rationale is incomplete or not all exclusions are documented.",
+          "not_met": "Data exclusions are not documented or explained."
+        },
+        "trans_reproducibility": {
+          "name": "Analysis reproducible by third party",
+          "weight": 15,
+          "met": "Sufficient detail is provided (data sources, methods, tools, assumptions) for an independent third party to reproduce the analysis.",
+          "partial": "Some analytical details are provided but gaps would prevent full independent reproduction.",
+          "not_met": "Insufficient detail for independent reproduction of the analysis."
+        },
+        "trans_assumptions": {
+          "name": "All assumptions explicitly stated",
+          "weight": 15,
+          "met": "All key assumptions underlying the M&V analysis are explicitly listed and described.",
+          "partial": "Some assumptions are stated but the list appears incomplete.",
+          "not_met": "Assumptions are not explicitly documented."
+        }
+      }
+    }
+  }
+}

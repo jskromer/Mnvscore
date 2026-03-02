@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "name": "Plan Structural Completeness",
+  "description": "Eleven structural elements that a complete M&V plan must contain. Protocol-neutral checklist applicable to any rigorous M&V plan.",
+  "scoring": {
+    "present": 2,
+    "partial": 1,
+    "missing": 0,
+    "max_possible": 22
+  },
+  "elements": {
+    "baseline_definition": {
+      "name": "Baseline definition",
+      "look_for": "Period dates, data source, operating conditions, weather data. The plan should specify the baseline period with start and end dates, identify data sources used, describe normal operating conditions during the baseline, and reference weather data if applicable.",
+      "present": "Baseline period is fully defined with dates, data sources, operating conditions, and weather data (if relevant).",
+      "partial": "Some baseline information is provided but key details (dates, data sources, or operating conditions) are missing.",
+      "missing": "No baseline definition is provided."
+    },
+    "reporting_period": {
+      "name": "Reporting period",
+      "look_for": "Duration, start trigger, end criteria. The plan should define when the reporting period begins (e.g., after commissioning), how long it lasts, and what conditions trigger its end.",
+      "present": "Reporting period is defined with duration, start trigger, and end criteria.",
+      "partial": "Reporting period is mentioned but duration, start trigger, or end criteria are incomplete.",
+      "missing": "No reporting period is defined."
+    },
+    "measurement_boundary": {
+      "name": "Measurement boundary",
+      "look_for": "Systems inside/outside boundary, exclusion rationale. The plan should clearly delineate which systems and equipment are within the measurement boundary and explain why any systems are excluded.",
+      "present": "Measurement boundary is clearly defined with systems included, systems excluded, and rationale for exclusions.",
+      "partial": "A boundary is implied or partially described but inclusions/exclusions are not fully specified.",
+      "missing": "No measurement boundary is defined."
+    },
+    "routine_adjustments": {
+      "name": "Routine adjustments",
+      "look_for": "Independent variables, normalization method, data sources. The plan should identify independent variables (e.g., weather, occupancy, production) used for routine adjustments, the normalization approach, and where the data comes from.",
+      "present": "Routine adjustments are fully defined with independent variables, normalization methods, and data sources.",
+      "partial": "Some routine adjustments are mentioned but independent variables, methods, or data sources are incomplete.",
+      "missing": "Routine adjustments are not addressed."
+    },
+    "non_routine_adjustments": {
+      "name": "Non-routine adjustments",
+      "look_for": "Trigger criteria, calculation method, responsible party. The plan should describe what events trigger non-routine adjustments (e.g., building additions, occupancy changes), how they are calculated, and who is responsible.",
+      "present": "Non-routine adjustments are defined with trigger criteria, calculation methods, and responsible parties.",
+      "partial": "Non-routine adjustments are acknowledged but trigger criteria, methods, or responsibilities are incomplete.",
+      "missing": "Non-routine adjustments are not addressed."
+    },
+    "mv_approach_selection": {
+      "name": "M&V approach selection",
+      "look_for": "Option/method chosen with rationale (A/B/C/D or equivalent). The plan should state which M&V approach is being used and why it is appropriate for this project.",
+      "present": "M&V approach is stated with clear rationale tied to project characteristics.",
+      "partial": "An M&V approach is named but rationale for selection is absent or generic.",
+      "missing": "No M&V approach is identified."
+    },
+    "data_collection": {
+      "name": "Data sources and collection",
+      "look_for": "Meter types, accuracy, frequency, storage, responsible party. The plan should specify what data is collected, by what instruments, at what accuracy and frequency, how it is stored, and who is responsible.",
+      "present": "Data collection is fully specified: meter types, accuracy, frequency, storage, and responsible party.",
+      "partial": "Some data collection details are provided but key specifics (accuracy, frequency, responsibility) are missing.",
+      "missing": "Data collection is not described."
+    },
+    "commissioning_period": {
+      "name": "Commissioning period",
+      "look_for": "Duration, acceptance criteria, verification. The plan should describe the post-installation commissioning period, including how long it lasts, what criteria must be met, and how proper installation/operation is verified.",
+      "present": "Commissioning period is defined with duration, acceptance criteria, and verification procedures.",
+      "partial": "Commissioning is mentioned but duration, criteria, or verification are incomplete.",
+      "missing": "No commissioning period is described."
+    },
+    "uncertainty_statement": {
+      "name": "Uncertainty statement",
+      "look_for": "Numerical bounds, confidence level, uncertainty sources. The plan should quantify expected uncertainty in savings estimates, state the confidence level, and identify major sources of uncertainty.",
+      "present": "Uncertainty is quantified with numerical bounds, confidence level, and identified sources.",
+      "partial": "Uncertainty is discussed qualitatively but not quantified or sources are not identified.",
+      "missing": "No uncertainty statement is provided."
+    },
+    "roles_responsibilities": {
+      "name": "Roles and responsibilities",
+      "look_for": "Data collection, calculations, reviews, dispute resolution. The plan should identify who performs data collection, who does calculations, who reviews results, and how disputes are resolved.",
+      "present": "Roles are clearly assigned for data collection, calculations, reviews, and dispute resolution.",
+      "partial": "Some roles are described but assignments are incomplete or dispute resolution is missing.",
+      "missing": "Roles and responsibilities are not addressed."
+    },
+    "documentation_retention": {
+      "name": "Documentation retention",
+      "look_for": "Duration, format, access provisions. The plan should specify how long M&V documentation will be retained, in what format, and who has access.",
+      "present": "Documentation retention is specified with duration, format, and access provisions.",
+      "partial": "Documentation is mentioned but retention duration, format, or access is not fully specified.",
+      "missing": "Documentation retention is not addressed."
+    }
+  }
+}
