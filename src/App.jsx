@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ScoringExplainer from "./ScoringExplainer";
 
 const BUILD_TIMESTAMP = new Date().toLocaleString("en-US", {
   year: "numeric",
@@ -226,6 +227,7 @@ export default function MNVScorecard() {
   const [expandedPrinciple, setExpandedPrinciple] = useState(null);
   const [expandedElement, setExpandedElement] = useState(null);
   const [showExplainer, setShowExplainer] = useState(false);
+  const [explainerTab, setExplainerTab] = useState("overview");
 
   async function fetchUrl() {
     if (!urlInput.trim()) return;
@@ -432,69 +434,104 @@ export default function MNVScorecard() {
             <button className="modal-close" onClick={() => setShowExplainer(false)}>
               {"\u2715"}
             </button>
-            <h2>How the M&V Scorecard Works</h2>
-            <p>
-              The M&V Scorecard evaluates Measurement & Verification plans in two stages,
-              giving you both a structural characterization and a detailed quality evaluation.
-            </p>
 
-            <h3>Stage 1: Characterization</h3>
-            <p>
-              Click <strong>Generate Scorecard</strong> to characterize your M&V plan across 8 dimensions:
-            </p>
-            <ul>
-              <li><strong>Measurement Method</strong> — what measurement approach is used</li>
-              <li><strong>Boundary & Scope</strong> — the measurement boundary definition</li>
-              <li><strong>Duration & Cadence</strong> — how long and how often measurements occur</li>
-              <li><strong>Use Case Fit</strong> — what the approach is best suited for</li>
-              <li><strong>Savings Isolation</strong> — ability to attribute savings to specific measures</li>
-              <li><strong>Interactive Effects</strong> — whether cross-system interactions are captured</li>
-              <li><strong>Baseline Robustness</strong> — quality of baseline construction</li>
-              <li><strong>Uncertainty Quantification</strong> — whether uncertainty is quantified</li>
-            </ul>
-            <p>
-              Each dimension receives a status: <strong>Sufficient</strong>, <strong>Limited</strong>,
-              or <strong>Not Addressed</strong>. Click any row to see the detail and structural implication.
-            </p>
+            {/* Tab bar */}
+            <div style={{ display: "flex", gap: 0, borderBottom: "1px solid #e0d8ce", marginBottom: 20 }}>
+              {[["overview", "How It Works"], ["scoring", "Scoring Details"]].map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setExplainerTab(key)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    borderBottom: explainerTab === key ? "2px solid #2a5a8a" : "2px solid transparent",
+                    padding: "8px 16px",
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: explainerTab === key ? 700 : 500,
+                    fontSize: 13,
+                    color: explainerTab === key ? "#2a5a8a" : "#8a7e70",
+                    cursor: "pointer",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
-            <h3>Stage 2: Quality Evaluation</h3>
-            <p>
-              After characterization, click <strong>Run Evaluation</strong> to score the plan against
-              6 universal M&V quality principles (26 criteria total) and check for 11 structural elements.
-            </p>
-            <p><strong>Quality Principles</strong> — each scored 0-100:</p>
-            <ul>
-              <li><strong>Accuracy</strong> — results close to true savings value, with managed uncertainty</li>
-              <li><strong>Completeness</strong> — all significant energy effects accounted for</li>
-              <li><strong>Conservativeness</strong> — assumptions understate rather than overstate savings</li>
-              <li><strong>Consistency</strong> — same methods across baseline and reporting periods</li>
-              <li><strong>Relevance</strong> — approach proportional to project size and risk</li>
-              <li><strong>Transparency</strong> — sufficient detail for independent review and replication</li>
-            </ul>
-            <p>
-              The <strong>composite score</strong> is the average of the 6 principle scores. The radar
-              chart visualizes the balance across principles. Expand any principle to see individual
-              criteria with evidence and gaps.
-            </p>
-            <p><strong>Plan Structural Completeness</strong> checks for 11 essential plan elements
-              (baseline definition, reporting period, measurement boundary, etc.). Each is scored as
-              Present (2), Partial (1), or Missing (0), summed into a structural index with a percentage.
-            </p>
+            {/* Tab: How It Works */}
+            {explainerTab === "overview" && (
+              <>
+                <h2>How the M&V Scorecard Works</h2>
+                <p>
+                  The M&V Scorecard evaluates Measurement & Verification plans in two stages,
+                  giving you both a structural characterization and a detailed quality evaluation.
+                </p>
 
-            <h3>Scoring Integrity</h3>
-            <p>
-              All numerical scores are recomputed server-side after the AI evaluation. Criterion
-              scores are calculated deterministically as weight {"\u00D7"} status (met=1.0, partial=0.5,
-              not met=0.0), principle scores as the sum of their criteria, and the composite as the
-              average of the 6 principles. This eliminates any arithmetic inconsistencies from the
-              language model.
-            </p>
+                <h3>Stage 1: Characterization</h3>
+                <p>
+                  Click <strong>Generate Scorecard</strong> to characterize your M&V plan across 8 dimensions:
+                </p>
+                <ul>
+                  <li><strong>Measurement Method</strong> — what measurement approach is used</li>
+                  <li><strong>Boundary & Scope</strong> — the measurement boundary definition</li>
+                  <li><strong>Duration & Cadence</strong> — how long and how often measurements occur</li>
+                  <li><strong>Use Case Fit</strong> — what the approach is best suited for</li>
+                  <li><strong>Savings Isolation</strong> — ability to attribute savings to specific measures</li>
+                  <li><strong>Interactive Effects</strong> — whether cross-system interactions are captured</li>
+                  <li><strong>Baseline Robustness</strong> — quality of baseline construction</li>
+                  <li><strong>Uncertainty Quantification</strong> — whether uncertainty is quantified</li>
+                </ul>
+                <p>
+                  Each dimension receives a status: <strong>Sufficient</strong>, <strong>Limited</strong>,
+                  or <strong>Not Addressed</strong>. Click any row to see the detail and structural implication.
+                </p>
 
-            <h3>Input Options</h3>
-            <p>
-              You can paste M&V plan text directly, use <strong>Fetch URL</strong> to extract content
-              from a web page, or try the built-in examples. Input is capped at 15,000 characters.
-            </p>
+                <h3>Stage 2: Quality Evaluation</h3>
+                <p>
+                  After characterization, click <strong>Run Evaluation</strong> to score the plan against
+                  6 universal M&V quality principles (26 criteria total) and check for 11 structural elements.
+                </p>
+                <p><strong>Quality Principles</strong> — each scored 0-100:</p>
+                <ul>
+                  <li><strong>Accuracy</strong> — results close to true savings value, with managed uncertainty</li>
+                  <li><strong>Completeness</strong> — all significant energy effects accounted for</li>
+                  <li><strong>Conservativeness</strong> — assumptions understate rather than overstate savings</li>
+                  <li><strong>Consistency</strong> — same methods across baseline and reporting periods</li>
+                  <li><strong>Relevance</strong> — approach proportional to project size and risk</li>
+                  <li><strong>Transparency</strong> — sufficient detail for independent review and replication</li>
+                </ul>
+                <p>
+                  The <strong>composite score</strong> is the average of the 6 principle scores. The radar
+                  chart visualizes the balance across principles. Expand any principle to see individual
+                  criteria with evidence and gaps.
+                </p>
+                <p><strong>Plan Structural Completeness</strong> checks for 11 essential plan elements
+                  (baseline definition, reporting period, measurement boundary, etc.). Each is scored as
+                  Present (2), Partial (1), or Missing (0), summed into a structural index with a percentage.
+                </p>
+
+                <h3>Scoring Integrity</h3>
+                <p>
+                  All numerical scores are recomputed server-side after the AI evaluation. Criterion
+                  scores are calculated deterministically as weight {"\u00D7"} status (met=1.0, partial=0.5,
+                  not met=0.0), principle scores as the sum of their criteria, and the composite as the
+                  average of the 6 principles. This eliminates any arithmetic inconsistencies from the
+                  language model.
+                </p>
+
+                <h3>Input Options</h3>
+                <p>
+                  You can paste M&V plan text directly, use <strong>Fetch URL</strong> to extract content
+                  from a web page, or try the built-in examples. Input is capped at 15,000 characters.
+                </p>
+              </>
+            )}
+
+            {/* Tab: Scoring Details */}
+            {explainerTab === "scoring" && (
+              <ScoringExplainer inline />
+            )}
           </div>
         </div>
       )}
