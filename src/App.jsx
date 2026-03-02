@@ -42,14 +42,14 @@ Return ONLY valid JSON, no markdown, no explanation. Use this exact structure:
 }`;
 
 const DIMENSION_META = {
-  measurement_method: { title: "Measurement Method", icon: "◈" },
-  boundary_scope: { title: "Boundary & Scope", icon: "⬡" },
-  duration_cadence: { title: "Duration & Cadence", icon: "◷" },
-  use_case_fit: { title: "Use Case Fit", icon: "◎" },
-  savings_isolation: { title: "Savings Isolation", icon: "⊕" },
-  interactive_effects: { title: "Interactive Effects", icon: "⋈" },
-  baseline_robustness: { title: "Baseline Robustness", icon: "⊞" },
-  uncertainty_quantification: { title: "Uncertainty Quantification", icon: "±" },
+  measurement_method: { title: "Measurement Method", icon: "\u25C8" },
+  boundary_scope: { title: "Boundary & Scope", icon: "\u2B21" },
+  duration_cadence: { title: "Duration & Cadence", icon: "\u25F7" },
+  use_case_fit: { title: "Use Case Fit", icon: "\u25CE" },
+  savings_isolation: { title: "Savings Isolation", icon: "\u2295" },
+  interactive_effects: { title: "Interactive Effects", icon: "\u22C8" },
+  baseline_robustness: { title: "Baseline Robustness", icon: "\u229E" },
+  uncertainty_quantification: { title: "Uncertainty Quantification", icon: "\u00B1" },
 };
 
 const FLAG_STYLES = {
@@ -64,6 +64,43 @@ const FLAG_LABEL = {
   not_addressed: "Not Addressed",
 };
 
+const PRINCIPLE_META = {
+  accuracy: { title: "Accuracy", icon: "\u25C7" },
+  completeness: { title: "Completeness", icon: "\u25C6" },
+  conservativeness: { title: "Conservativeness", icon: "\u25C1" },
+  consistency: { title: "Consistency", icon: "\u25B7" },
+  relevance: { title: "Relevance", icon: "\u25CE" },
+  transparency: { title: "Transparency", icon: "\u25B3" },
+};
+
+const COMPLIANCE_STATUS_MAP = {
+  met: "sufficient",
+  partial: "limited",
+  not_met: "not_addressed",
+  present: "sufficient",
+  missing: "not_addressed",
+};
+
+const ELEMENT_NAMES = {
+  baseline_definition: "Baseline Definition",
+  reporting_period: "Reporting Period",
+  measurement_boundary: "Measurement Boundary",
+  routine_adjustments: "Routine Adjustments",
+  non_routine_adjustments: "Non-Routine Adjustments",
+  mv_approach_selection: "M&V Approach Selection",
+  data_collection: "Data Sources & Collection",
+  commissioning_period: "Commissioning Period",
+  uncertainty_statement: "Uncertainty Statement",
+  roles_responsibilities: "Roles & Responsibilities",
+  documentation_retention: "Documentation Retention",
+};
+
+const ELEMENT_STATUS_LABEL = {
+  present: "Present",
+  partial: "Partial",
+  missing: "Missing",
+};
+
 const EXAMPLES = [
   {
     label: "WattCarbon (utility bill M&V)",
@@ -75,9 +112,94 @@ const EXAMPLES = [
   },
   {
     label: "IPMVP Option B (end-use submetering)",
-    text: `This M&V plan uses IPMVP Option B with dedicated submetering of the lighting and HVAC systems affected by the retrofit. Baseline measurements were taken over a 4-week period prior to installation, capturing weekday and weekend operating patterns. Post-installation measurements will continue for 12 months. Savings are calculated at the system level with stipulated values for operating hours based on building management system schedules. Interactive effects between lighting heat gain reduction and HVAC cooling load are estimated using a fixed interaction factor of 0.15 kW-cooling per kW-lighting. Measurement uncertainty is estimated at ±12% at 80% confidence for the lighting system and ±18% for HVAC.`,
+    text: `This M&V plan uses IPMVP Option B with dedicated submetering of the lighting and HVAC systems affected by the retrofit. Baseline measurements were taken over a 4-week period prior to installation, capturing weekday and weekend operating patterns. Post-installation measurements will continue for 12 months. Savings are calculated at the system level with stipulated values for operating hours based on building management system schedules. Interactive effects between lighting heat gain reduction and HVAC cooling load are estimated using a fixed interaction factor of 0.15 kW-cooling per kW-lighting. Measurement uncertainty is estimated at \u00B112% at 80% confidence for the lighting system and \u00B118% for HVAC.`,
   },
 ];
+
+function RadarChart({ principles }) {
+  const size = 280;
+  const cx = size / 2;
+  const cy = size / 2;
+  const maxR = 100;
+  const keys = Object.keys(PRINCIPLE_META);
+  const angleStep = (2 * Math.PI) / 6;
+  const startAngle = -Math.PI / 2;
+
+  function polarToXY(angle, r) {
+    const scaled = (r / 100) * maxR;
+    return [cx + scaled * Math.cos(angle), cy + scaled * Math.sin(angle)];
+  }
+
+  function hexagonPoints(r) {
+    return keys
+      .map((_, i) => polarToXY(startAngle + i * angleStep, r))
+      .map(([x, y]) => `${x},${y}`)
+      .join(" ");
+  }
+
+  const dataPoints = keys.map((k, i) => {
+    const score = principles[k]?.score ?? 0;
+    return polarToXY(startAngle + i * angleStep, score);
+  });
+
+  const dataPolygon = dataPoints.map(([x, y]) => `${x},${y}`).join(" ");
+
+  const labelOffsets = keys.map((k, i) => {
+    const [x, y] = polarToXY(startAngle + i * angleStep, 118);
+    return { key: k, x, y };
+  });
+
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+      {[33, 66, 100].map((r) => (
+        <polygon
+          key={r}
+          points={hexagonPoints(r)}
+          fill="none"
+          stroke="#e0d8ce"
+          strokeWidth="0.5"
+        />
+      ))}
+      {keys.map((_, i) => {
+        const [x, y] = polarToXY(startAngle + i * angleStep, 100);
+        return (
+          <line
+            key={i}
+            x1={cx}
+            y1={cy}
+            x2={x}
+            y2={y}
+            stroke="#e0d8ce"
+            strokeWidth="0.5"
+          />
+        );
+      })}
+      <polygon
+        points={dataPolygon}
+        fill="rgba(42, 90, 138, 0.2)"
+        stroke="#2a5a8a"
+        strokeWidth="1.5"
+      />
+      {dataPoints.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="3" fill="#2a5a8a" />
+      ))}
+      {labelOffsets.map(({ key, x, y }) => (
+        <text
+          key={key}
+          x={x}
+          y={y}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize="9"
+          fill="#6a7a8a"
+          fontFamily="'DM Mono', monospace"
+        >
+          {PRINCIPLE_META[key].title}
+        </text>
+      ))}
+    </svg>
+  );
+}
 
 export default function MNVScorecard() {
   const [input, setText] = useState("");
@@ -88,6 +210,12 @@ export default function MNVScorecard() {
   const [error, setError] = useState(null);
   const [expandedDim, setExpandedDim] = useState(null);
   const [fetchedSource, setFetchedSource] = useState(null);
+
+  const [complianceResult, setComplianceResult] = useState(null);
+  const [complianceLoading, setComplianceLoading] = useState(false);
+  const [complianceError, setComplianceError] = useState(null);
+  const [expandedPrinciple, setExpandedPrinciple] = useState(null);
+  const [expandedElement, setExpandedElement] = useState(null);
 
   async function fetchUrl() {
     if (!urlInput.trim()) return;
@@ -118,6 +246,10 @@ export default function MNVScorecard() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setComplianceResult(null);
+    setComplianceError(null);
+    setExpandedPrinciple(null);
+    setExpandedElement(null);
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -141,6 +273,35 @@ export default function MNVScorecard() {
     setLoading(false);
   }
 
+  async function evaluateCompliance() {
+    if (!input.trim()) return;
+    setComplianceLoading(true);
+    setComplianceError(null);
+    setComplianceResult(null);
+    setExpandedPrinciple(null);
+    setExpandedElement(null);
+    try {
+      const response = await fetch("/api/compliance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: input }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setComplianceError(data.error || "Evaluation request failed. Please try again.");
+        setComplianceLoading(false);
+        return;
+      }
+      const text = data.content?.map((b) => b.text || "").join("") || "";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      setComplianceResult(parsed);
+    } catch (e) {
+      setComplianceError("Could not parse the compliance evaluation. Please try again.");
+    }
+    setComplianceLoading(false);
+  }
+
   const dims = result ? Object.entries(result.dimensions) : [];
   const flagCounts = result
     ? {
@@ -149,6 +310,9 @@ export default function MNVScorecard() {
         not_addressed: dims.filter(([, v]) => v.flag === "not_addressed").length,
       }
     : null;
+
+  const principles = complianceResult?.principle_adherence?.principles;
+  const completeness = complianceResult?.plan_completeness;
 
   return (
     <div
@@ -177,6 +341,9 @@ export default function MNVScorecard() {
         .example-btn { transition: all 0.15s; cursor: pointer; }
         .example-btn:hover { border-color: #7a9ab8 !important; color: #2a5070 !important; }
         .fetch-btn:hover:not(:disabled) { background: #3a6a4a !important; }
+        .eval-btn { transition: all 0.2s; }
+        .eval-btn:hover:not(:disabled) { background: #3a6a4a !important; }
+        .eval-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .slide-in { animation: slideIn 0.3s ease forwards; }
@@ -359,7 +526,7 @@ export default function MNVScorecard() {
         {loading && (
           <div style={{ textAlign: "center", padding: "48px 0", color: "#8a7e70" }}>
             <div className="spinner" style={{ fontSize: 13, letterSpacing: 2 }}>
-              ◈ ANALYZING M&V METHODOLOGY ◈
+              {"\u25C8"} ANALYZING M&V METHODOLOGY {"\u25C8"}
             </div>
           </div>
         )}
@@ -674,6 +841,444 @@ export default function MNVScorecard() {
             >
               Click any row to expand detail and structural implication
             </div>
+
+            {/* Run Evaluation Button */}
+            {!complianceResult && !complianceLoading && (
+              <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
+                <button
+                  className="eval-btn"
+                  onClick={evaluateCompliance}
+                  disabled={complianceLoading}
+                  style={{
+                    background: "#5a8a6a",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: 3,
+                    padding: "10px 28px",
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                    cursor: "pointer",
+                  }}
+                >
+                  Run Evaluation
+                </button>
+              </div>
+            )}
+
+            {/* Compliance Loading */}
+            {complianceLoading && (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#8a7e70" }}>
+                <div className="spinner" style={{ fontSize: 13, letterSpacing: 2 }}>
+                  {"\u25C8"} EVALUATING M&V PLAN QUALITY {"\u25C8"}
+                </div>
+              </div>
+            )}
+
+            {/* Compliance Error */}
+            {complianceError && (
+              <div
+                style={{
+                  background: "#fef2f2",
+                  border: "1px solid #fca5a5",
+                  borderRadius: 4,
+                  padding: "12px 16px",
+                  color: "#991b1b",
+                  fontSize: 13,
+                  marginTop: 16,
+                }}
+              >
+                {complianceError}
+              </div>
+            )}
+
+            {/* Compliance Result */}
+            {complianceResult && principles && (
+              <div className="slide-in" style={{ marginTop: 24 }}>
+                {/* Composite Score + Radar Chart */}
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #e0d8ce",
+                    borderRadius: 4,
+                    padding: "24px",
+                    marginBottom: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontFamily: "'Syne', sans-serif",
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: "#1a2a3a",
+                      }}
+                    >
+                      M&V Quality Evaluation
+                    </div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                      <span
+                        style={{
+                          fontFamily: "'Syne', sans-serif",
+                          fontSize: 32,
+                          fontWeight: 800,
+                          color: "#2a5a8a",
+                        }}
+                      >
+                        {complianceResult.principle_adherence?.composite_score ?? "—"}
+                      </span>
+                      <span style={{ fontSize: 14, color: "#8a9aaa", fontWeight: 500 }}>
+                        /100
+                      </span>
+                    </div>
+                  </div>
+
+                  {complianceResult.summary && (
+                    <div style={{ fontSize: 13, lineHeight: 1.7, color: "#5a6a7a", marginBottom: 16 }}>
+                      {complianceResult.summary}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                    <RadarChart principles={principles} />
+                  </div>
+
+                  {/* Principle score badges */}
+                  <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                    {Object.entries(PRINCIPLE_META).map(([key, meta]) => {
+                      const score = principles[key]?.score ?? 0;
+                      return (
+                        <div
+                          key={key}
+                          style={{
+                            background: "#f5f1ec",
+                            borderRadius: 3,
+                            padding: "4px 10px",
+                            fontSize: 11,
+                            color: "#4a5a6a",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <span style={{ color: "#a0b8cc" }}>{meta.icon}</span>
+                          <span>{meta.title}</span>
+                          <span style={{ fontWeight: 600, color: "#2a5a8a" }}>{score}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Principle Detail Rows */}
+                <div
+                  style={{
+                    border: "1px solid #e0d8ce",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    background: "#ffffff",
+                    marginBottom: 16,
+                  }}
+                >
+                  {/* Header */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "28px 1fr 60px 100px",
+                      background: "#f5f1ec",
+                      padding: "8px 16px",
+                      borderBottom: "1px solid #e0d8ce",
+                    }}
+                  >
+                    <div />
+                    <div style={{ fontSize: 10, color: "#8a7e70", letterSpacing: 2, textTransform: "uppercase" }}>
+                      Principle
+                    </div>
+                    <div style={{ fontSize: 10, color: "#8a7e70", letterSpacing: 2, textTransform: "uppercase" }}>
+                      Score
+                    </div>
+                    <div />
+                  </div>
+
+                  {Object.entries(PRINCIPLE_META).map(([key, meta]) => {
+                    const principle = principles[key];
+                    if (!principle) return null;
+                    const isExpanded = expandedPrinciple === key;
+                    const scorePercent = principle.score;
+                    const criteria = principle.criteria ? Object.entries(principle.criteria) : [];
+
+                    return (
+                      <div key={key}>
+                        <div
+                          className={`dim-row${isExpanded ? " expanded" : ""}`}
+                          onClick={() => setExpandedPrinciple(isExpanded ? null : key)}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "28px 1fr 60px 100px",
+                            padding: "12px 16px",
+                            alignItems: "center",
+                          }}
+                        >
+                          <div style={{ color: "#a0b8cc", fontSize: 14 }}>{meta.icon}</div>
+                          <div
+                            style={{
+                              fontSize: 13,
+                              color: "#2a3a4a",
+                              fontFamily: "'Syne', sans-serif",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {meta.title}
+                          </div>
+                          <div style={{ fontSize: 13, color: "#2a5a8a", fontWeight: 600 }}>
+                            {scorePercent}
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                background: "#f0ede8",
+                                borderRadius: 2,
+                                height: 6,
+                                width: "100%",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  background: "#2a5a8a",
+                                  height: "100%",
+                                  width: `${scorePercent}%`,
+                                  borderRadius: 2,
+                                  transition: "width 0.3s",
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Expanded criteria table */}
+                        {isExpanded && criteria.length > 0 && (
+                          <div
+                            style={{
+                              background: "#f9f6f2",
+                              borderBottom: "1px solid #e0d8ce",
+                              padding: "12px 16px 12px 44px",
+                            }}
+                          >
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                              <thead>
+                                <tr style={{ borderBottom: "1px solid #e0d8ce" }}>
+                                  <th style={{ textAlign: "left", padding: "6px 8px", color: "#8a7e70", fontSize: 10, letterSpacing: 1, textTransform: "uppercase" }}>Criterion</th>
+                                  <th style={{ textAlign: "center", padding: "6px 8px", color: "#8a7e70", fontSize: 10, letterSpacing: 1, textTransform: "uppercase" }}>Status</th>
+                                  <th style={{ textAlign: "center", padding: "6px 8px", color: "#8a7e70", fontSize: 10, letterSpacing: 1, textTransform: "uppercase" }}>Score/Max</th>
+                                  <th style={{ textAlign: "left", padding: "6px 8px", color: "#8a7e70", fontSize: 10, letterSpacing: 1, textTransform: "uppercase" }}>Evidence</th>
+                                  <th style={{ textAlign: "left", padding: "6px 8px", color: "#8a7e70", fontSize: 10, letterSpacing: 1, textTransform: "uppercase" }}>Gap</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {criteria.map(([cid, c]) => {
+                                  const flagKey = COMPLIANCE_STATUS_MAP[c.status] || "not_addressed";
+                                  const fs = FLAG_STYLES[flagKey];
+                                  return (
+                                    <tr key={cid} style={{ borderBottom: "1px solid #f0ede8" }}>
+                                      <td style={{ padding: "8px 8px", color: "#4a5a6a", maxWidth: 160 }}>{cid}</td>
+                                      <td style={{ padding: "8px 8px", textAlign: "center" }}>
+                                        <span
+                                          style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 4,
+                                            background: fs.bg,
+                                            border: `1px solid ${fs.border}`,
+                                            borderRadius: 2,
+                                            padding: "2px 6px",
+                                            fontSize: 10,
+                                            color: fs.text,
+                                            fontWeight: 500,
+                                          }}
+                                        >
+                                          <span style={{ width: 4, height: 4, borderRadius: "50%", background: fs.dot }} />
+                                          {c.status}
+                                        </span>
+                                      </td>
+                                      <td style={{ padding: "8px 8px", textAlign: "center", color: "#4a5a6a" }}>
+                                        {c.score}/{c.max_score}
+                                      </td>
+                                      <td style={{ padding: "8px 8px", color: "#5a6a7a", fontSize: 11, maxWidth: 200, lineHeight: 1.5 }}>
+                                        {c.evidence || "—"}
+                                      </td>
+                                      <td style={{ padding: "8px 8px", color: "#7a6a5a", fontSize: 11, maxWidth: 160, lineHeight: 1.5 }}>
+                                        {c.gap || "—"}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Plan Structural Completeness */}
+                {completeness && (
+                  <div
+                    style={{
+                      border: "1px solid #e0d8ce",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      background: "#ffffff",
+                    }}
+                  >
+                    {/* Section Header */}
+                    <div
+                      style={{
+                        background: "#f5f1ec",
+                        padding: "12px 16px",
+                        borderBottom: "1px solid #e0d8ce",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "'Syne', sans-serif",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          color: "#1a2a3a",
+                        }}
+                      >
+                        Plan Structural Completeness
+                      </div>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#2a5a8a" }}>
+                          {completeness.structural_index}/{completeness.max_possible}
+                        </span>
+                        <span style={{ fontSize: 12, color: "#8a9aaa" }}>
+                          ({completeness.percentage}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Progress bar */}
+                    <div style={{ padding: "12px 16px", borderBottom: "1px solid #e0d8ce" }}>
+                      <div
+                        style={{
+                          background: "#f5f1ec",
+                          borderRadius: 3,
+                          height: 10,
+                          width: "100%",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <div
+                          style={{
+                            background: "#2a5a8a",
+                            height: "100%",
+                            width: `${completeness.percentage}%`,
+                            borderRadius: 3,
+                            transition: "width 0.3s",
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Element rows */}
+                    {completeness.elements && Object.entries(completeness.elements).map(([eid, el]) => {
+                      const isExpanded = expandedElement === eid;
+                      const flagKey = COMPLIANCE_STATUS_MAP[el.status] || "not_addressed";
+                      const fs = FLAG_STYLES[flagKey];
+                      const statusLabel = ELEMENT_STATUS_LABEL[el.status] || el.status;
+
+                      return (
+                        <div key={eid}>
+                          <div
+                            className={`dim-row${isExpanded ? " expanded" : ""}`}
+                            onClick={() => setExpandedElement(isExpanded ? null : eid)}
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 100px",
+                              padding: "10px 16px",
+                              alignItems: "center",
+                            }}
+                          >
+                            <div style={{ fontSize: 13, color: "#2a3a4a" }}>
+                              {ELEMENT_NAMES[eid] || eid}
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                  background: fs.bg,
+                                  border: `1px solid ${fs.border}`,
+                                  borderRadius: 2,
+                                  padding: "2px 8px",
+                                  fontSize: 11,
+                                  color: fs.text,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                <span style={{ width: 4, height: 4, borderRadius: "50%", background: fs.dot }} />
+                                {statusLabel}
+                              </span>
+                            </div>
+                          </div>
+
+                          {isExpanded && (
+                            <div
+                              style={{
+                                background: "#f9f6f2",
+                                borderBottom: "1px solid #e0d8ce",
+                                padding: "12px 16px 12px 16px",
+                              }}
+                            >
+                              {el.evidence && (
+                                <div style={{ marginBottom: 8 }}>
+                                  <div style={{ fontSize: 10, color: "#a09888", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+                                    Evidence
+                                  </div>
+                                  <div style={{ fontSize: 12, color: "#5a6a7a", lineHeight: 1.65 }}>
+                                    {el.evidence}
+                                  </div>
+                                </div>
+                              )}
+                              {el.section_ref && (
+                                <div>
+                                  <div style={{ fontSize: 10, color: "#a09888", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
+                                    Section Reference
+                                  </div>
+                                  <div style={{ fontSize: 12, color: "#5a6a7a" }}>
+                                    {el.section_ref}
+                                  </div>
+                                </div>
+                              )}
+                              {!el.evidence && !el.section_ref && (
+                                <div style={{ fontSize: 12, color: "#a09888", fontStyle: "italic" }}>
+                                  No evidence cited
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

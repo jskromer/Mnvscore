@@ -9,8 +9,9 @@ function buildPrinciplesSection(rubric) {
   section += `Evaluate the M&V plan against these 6 principles. Each principle has weighted criteria.\n`;
   section += `For each criterion, assign a status: "met", "partial", or "not_met".\n`;
   section += `Score = status weight × criterion weight (met=1.0, partial=0.5, not_met=0.0).\n`;
+  section += `For partial status, the score is EXACTLY weight × 0.5. For example, a criterion with weight 25 and status "partial" scores exactly 12.5.\n`;
   section += `The principle score = sum of (status_weight × criterion_weight) for all criteria in that principle.\n`;
-  section += `The composite_score = average of all 6 principle scores (rounded to nearest integer).\n\n`;
+  section += `Do not independently estimate principle or composite scores — they will be recomputed server-side.\n\n`;
 
   for (const [principleId, principle] of Object.entries(rubric.principles)) {
     section += `### ${principle.name}\n`;
