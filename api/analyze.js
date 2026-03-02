@@ -79,7 +79,13 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    return res.status(response.status).json(data);
+
+    if (!response.ok) {
+      const msg = data.error?.message || data.error || "API request failed";
+      return res.status(response.status).json({ error: msg });
+    }
+
+    return res.status(200).json(data);
   } catch (e) {
     return res.status(500).json({ error: "API request failed" });
   }
