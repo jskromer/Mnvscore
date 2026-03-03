@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import ScoringExplainer from "./ScoringExplainer";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { Analytics } from "@vercel/analytics/react";
 
 // Wrap the worker with a Promise.withResolvers polyfill for Safari <18.7
 const workerBlob = new Blob(
@@ -1533,6 +1534,7 @@ export default function MNVScorecard() {
           </div>
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
