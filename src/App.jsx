@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import ScoringExplainer from "./ScoringExplainer";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
@@ -1533,6 +1534,7 @@ export default function MNVScorecard() {
           </div>
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
