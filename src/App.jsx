@@ -386,23 +386,28 @@ export default function MNVScorecard() {
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
       setComplianceResult(parsed);
-      // Save to session history
-      const principleScores = {};
-      if (parsed?.principle_adherence?.principles) {
-        for (const p of parsed.principle_adherence.principles) {
-          principleScores[p.principle] = p.score;
+      // Save to session history (outside try/catch so it never triggers the error banner)
+      try {
+        const principleScores = {};
+        const principlesObj = parsed?.principle_adherence?.principles;
+        if (principlesObj && typeof principlesObj === "object") {
+          for (const [pid, p] of Object.entries(principlesObj)) {
+            principleScores[pid] = p.score;
+          }
         }
+        saveToHistory({
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          source: pdfSource ? "pdf" : fetchedSource ? "url" : exampleSource ? "example" : "paste",
+          sourceName: pdfSource || fetchedSource || (exampleSource ? "Example: " + exampleSource : "[pasted text]"),
+          contentLength: input.length,
+          compositeScore: parsed?.principle_adherence?.composite_score,
+          principles: principleScores,
+          characterization: result ? { use_case_match: result.dimensions?.use_case_fit?.assessment } : null,
+        });
+      } catch (_) {
+        // History save failure should never show as an error to the user
       }
-      saveToHistory({
-        id: crypto.randomUUID(),
-        timestamp: new Date().toISOString(),
-        source: pdfSource ? "pdf" : fetchedSource ? "url" : exampleSource ? "example" : "paste",
-        sourceName: pdfSource || fetchedSource || (exampleSource ? "Example: " + exampleSource : "[pasted text]"),
-        contentLength: input.length,
-        compositeScore: parsed?.principle_adherence?.composite_score,
-        principles: principleScores,
-        characterization: result ? { use_case_match: result.dimensions?.use_case_fit?.assessment } : null,
-      });
     } catch (e) {
       setComplianceError("Could not parse the compliance evaluation. Please try again.");
     }
