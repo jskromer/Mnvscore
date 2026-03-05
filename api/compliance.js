@@ -1,4 +1,3 @@
-import { kv } from "@vercel/kv";
 import { rateLimit } from "./_rate-limit.js";
 import { buildSystemPrompt } from "./rubrics/prompt-builder.js";
 import { createRequire } from "module";
@@ -132,6 +131,7 @@ export default async function handler(req, res) {
     // Log submission metadata to Vercel KV (fire-and-forget, never block response)
     try {
       if (scored && process.env.KV_REST_API_URL) {
+        const { kv } = await import("@vercel/kv");
         const submissionId = crypto.randomUUID();
         const principleScores = {};
         const principles = scored.principle_adherence?.principles;

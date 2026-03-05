@@ -1,5 +1,3 @@
-import { kv } from "@vercel/kv";
-
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -20,6 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { kv } = await import("@vercel/kv");
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const ids = await kv.lrange("submissions:index", 0, limit - 1);
 
