@@ -17,6 +17,16 @@ dist
 dist-ssr
 *.local
 
+# Claude Code
+.claude/
+
+# R artifacts
+.Rhistory
+
+# Sample/test files
+sample-*.pdf
+sample-*.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
