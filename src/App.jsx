@@ -247,6 +247,13 @@ export default function MNVScorecard() {
   const [pdfSource, setPdfSource] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const pdfInputRef = useRef(null);
+  const [history, setHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('mnvscore_history') || '[]');
+    } catch { return []; }
+  });
+  const [showHistory, setShowHistory] = useState(false);
+  const [exampleSource, setExampleSource] = useState(null);
 
   const MAX_PDF_CHARS = 15000;
 
@@ -374,10 +381,33 @@ export default function MNVScorecard() {
       const clean = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(clean);
       setComplianceResult(parsed);
+      // Save to session history
+      const principleScores = {};
+      if (parsed?.principle_adherence?.principles) {
+        for (const p of parsed.principle_adherence.principles) {
+          principleScores[p.principle] = p.score;
+        }
+      }
+      saveToHistory({
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        source: pdfSource ? "pdf" : fetchedSource ? "url" : exampleSource ? "example" : "paste",
+        sourceName: pdfSource || fetchedSource || (exampleSource ? "Example: " + exampleSource : "[pasted text]"),
+        contentLength: input.length,
+        compositeScore: parsed?.principle_adherence?.composite_score,
+        principles: principleScores,
+        characterization: result ? { use_case_match: result.dimensions?.use_case_fit?.assessment } : null,
+      });
     } catch (e) {
       setComplianceError("Could not parse the compliance evaluation. Please try again.");
     }
     setComplianceLoading(false);
+  }
+
+  function saveToHistory(entry) {
+    const updated = [entry, ...history].slice(0, 50);
+    setHistory(updated);
+    localStorage.setItem('mnvscore_history', JSON.stringify(updated));
   }
 
   const dims = result ? Object.entries(result.dimensions) : [];
@@ -465,7 +495,7 @@ export default function MNVScorecard() {
           <span
             className="explainer-link"
             onClick={() => setShowExplainer(true)}
-            style={{ fontSize: 11, letterSpacing: 1 }}
+            style={{ fontSize: 14, letterSpacing: 1 }}
           >
             How It Works
           </span>
@@ -604,6 +634,27 @@ export default function MNVScorecard() {
       )}
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 32px" }}>
+        {/* Research Notice Banner */}
+        <div
+          style={{
+            backgroundColor: "#eef3ee",
+            border: "1px solid #c8dac8",
+            borderRadius: 4,
+            padding: "10px 16px",
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 13, color: "#3a6a4a", fontFamily: "'DM Mono', monospace", letterSpacing: 0.3 }}>
+            ◈ RESEARCH PREVIEW
+          </span>
+          <span style={{ fontSize: 12, color: "#5a7a5a", fontFamily: "'DM Mono', monospace" }}>
+            — Plans are evaluated locally and not stored. Scores are AI-generated; review findings with professional judgment.
+          </span>
+        </div>
+
         {/* Input Panel */}
         <div style={{ marginBottom: 24 }}>
           <div
@@ -701,7 +752,7 @@ export default function MNVScorecard() {
           )}
           <textarea
             value={input}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => { setText(e.target.value); setExampleSource(null); }}
             placeholder="Paste an M&V plan, vendor methodology description, or program documentation..."
             rows={7}
             style={{
@@ -734,7 +785,7 @@ export default function MNVScorecard() {
               <button
                 key={i}
                 className="example-btn"
-                onClick={() => setText(ex.text)}
+                onClick={() => { setText(ex.text); setExampleSource(ex.label); }}
                 style={{
                   background: "transparent",
                   border: "1px solid #d0c8bc",
@@ -772,6 +823,68 @@ export default function MNVScorecard() {
             </button>
           </div>
         </div>
+
+        {/* Session History */}
+        {history.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div
+              onClick={() => setShowHistory(!showHistory)}
+              style={{
+                fontSize: 11,
+                color: "#6a8aa8",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                cursor: "pointer",
+                userSelect: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>{showHistory ? "▾" : "▸"}</span>
+              Submission History ({history.length} {history.length === 1 ? "entry" : "entries"})
+            </div>
+            {showHistory && (
+              <div
+                style={{
+                  marginTop: 8,
+                  background: "#ffffff",
+                  border: "1px solid #e8e2da",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                }}
+              >
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, fontFamily: "'DM Mono', monospace" }}>
+                  <thead>
+                    <tr style={{ background: "#f5f1ec", textAlign: "left" }}>
+                      <th style={{ padding: "8px 12px", color: "#6a8aa8", letterSpacing: 1, fontWeight: 500 }}>DATE</th>
+                      <th style={{ padding: "8px 12px", color: "#6a8aa8", letterSpacing: 1, fontWeight: 500 }}>SOURCE</th>
+                      <th style={{ padding: "8px 12px", color: "#6a8aa8", letterSpacing: 1, fontWeight: 500, textAlign: "right" }}>SCORE</th>
+                      <th style={{ padding: "8px 12px", color: "#6a8aa8", letterSpacing: 1, fontWeight: 500 }}>FLAGS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.map((h) => {
+                      const date = new Date(h.timestamp);
+                      const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) + " " + date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+                      const lowPrinciples = h.principles
+                        ? Object.entries(h.principles).filter(([, v]) => v < 50).map(([k]) => k.slice(0, 7))
+                        : [];
+                      return (
+                        <tr key={h.id} style={{ borderTop: "1px solid #f0ede8" }}>
+                          <td style={{ padding: "6px 12px", color: "#8a7e70", whiteSpace: "nowrap" }}>{dateStr}</td>
+                          <td style={{ padding: "6px 12px", color: "#3a3a3a", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.sourceName}</td>
+                          <td style={{ padding: "6px 12px", color: "#2a5a8a", fontWeight: 500, textAlign: "right" }}>{h.compositeScore != null ? Math.round(h.compositeScore) : "—"}</td>
+                          <td style={{ padding: "6px 12px", color: "#b45309", fontSize: 10 }}>{lowPrinciples.length > 0 ? lowPrinciples.map((p) => p + " ↓").join(", ") : "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Loading */}
         {loading && (
