@@ -1,5 +1,8 @@
+import { kv } from "@vercel/kv";
+import { rateLimit } from "./_rate-limit.js";
 import { buildSystemPrompt } from "./rubrics/prompt-builder.js";
 import { createRequire } from "module";
+import { createHash } from "crypto";
 
 const require = createRequire(import.meta.url);
 const principlesRubric = require("./rubrics/mv-principles-v1.json");
@@ -65,6 +68,8 @@ function recomputeScores(parsed) {
 }
 
 export default async function handler(req, res) {
+  if (rateLimit(req, res, 10)) return;
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -102,20 +107,57 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.error?.message || data.error || "API request failed";
-      return res.status(response.status).json({ error: msg });
+      console.error("Anthropic API error:", data.error?.message || data.error);
+      const status = response.status === 429 ? 429 : 502;
+      const msg = response.status === 429
+        ? "Analysis service is busy. Please try again in a moment."
+        : "Compliance evaluation failed. Please try again later.";
+      return res.status(status).json({ error: msg });
     }
 
     // Parse the inner JSON string, recompute scores, write back
     const textBlock = data.content?.[0]?.text;
+    let scored = null;
     if (textBlock) {
       try {
         const parsed = JSON.parse(textBlock.replace(/```json|```/g, "").trim());
         recomputeScores(parsed);
+        scored = parsed;
         data.content[0].text = JSON.stringify(parsed);
       } catch (_) {
         // If inner JSON parse fails, return as-is
       }
+    }
+
+    // Log submission metadata to Vercel KV (fire-and-forget, never block response)
+    try {
+      if (scored && process.env.KV_REST_API_URL) {
+        const submissionId = crypto.randomUUID();
+        const principleScores = {};
+        const principles = scored.principle_adherence?.principles;
+        if (principles) {
+          for (const [pid, p] of Object.entries(principles)) {
+            principleScores[pid] = p.score;
+          }
+        }
+        const record = {
+          timestamp: new Date().toISOString(),
+          source_type: req.headers["x-source-type"] || "unknown",
+          content_hash: createHash("sha256").update(content.trim()).digest("hex").slice(0, 16),
+          content_length: content.length,
+          composite: scored.principle_adherence?.composite_score ?? null,
+          structural_pct: scored.plan_completeness?.percentage ?? null,
+          ...principleScores,
+          session_id: req.headers["x-session-id"] || null,
+        };
+        // Don't await — log in background so it never slows the response
+        kv.hset(`submission:${submissionId}`, record)
+          .then(() => kv.lpush("submissions:index", submissionId))
+          .then(() => kv.ltrim("submissions:index", 0, 999))
+          .catch((err) => console.error("KV log error:", err));
+      }
+    } catch (err) {
+      console.error("KV setup error:", err);
     }
 
     return res.status(200).json(data);

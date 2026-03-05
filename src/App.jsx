@@ -254,6 +254,14 @@ export default function MNVScorecard() {
   });
   const [showHistory, setShowHistory] = useState(false);
   const [exampleSource, setExampleSource] = useState(null);
+  const [sessionId] = useState(() => {
+    let id = localStorage.getItem('mnvscore_session_id');
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem('mnvscore_session_id', id);
+    }
+    return id;
+  });
 
   const MAX_PDF_CHARS = 15000;
 
@@ -366,9 +374,14 @@ export default function MNVScorecard() {
     setExpandedPrinciple(null);
     setExpandedElement(null);
     try {
+      const sourceType = pdfSource ? "pdf" : fetchedSource ? "url" : exampleSource ? "example" : "paste";
       const response = await fetch("/api/compliance", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-source-type": sourceType,
+          "x-session-id": sessionId,
+        },
         body: JSON.stringify({ content: input }),
       });
       const data = await response.json();
