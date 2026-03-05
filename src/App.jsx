@@ -405,8 +405,8 @@ export default function MNVScorecard() {
           principles: principleScores,
           characterization: result ? { use_case_match: result.dimensions?.use_case_fit?.assessment } : null,
         });
-      } catch (_) {
-        // History save failure should never show as an error to the user
+      } catch (histErr) {
+        console.warn("History save failed:", histErr);
       }
     } catch (e) {
       setComplianceError("Could not parse the compliance evaluation. Please try again.");
