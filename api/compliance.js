@@ -128,7 +128,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Log submission metadata to Vercel KV (fire-and-forget, never block response)
+    // Log submission metadata to Vercel KV (must await — serverless freezes after response)
     try {
       if (scored && process.env.KV_REST_API_URL) {
         const { kv } = await import("@vercel/kv");
@@ -150,14 +150,12 @@ export default async function handler(req, res) {
           ...principleScores,
           session_id: req.headers["x-session-id"] || null,
         };
-        // Don't await — log in background so it never slows the response
-        kv.hset(`submission:${submissionId}`, record)
-          .then(() => kv.lpush("submissions:index", submissionId))
-          .then(() => kv.ltrim("submissions:index", 0, 999))
-          .catch((err) => console.error("KV log error:", err));
+        await kv.hset(`submission:${submissionId}`, record);
+        await kv.lpush("submissions:index", submissionId);
+        await kv.ltrim("submissions:index", 0, 999);
       }
     } catch (err) {
-      console.error("KV setup error:", err);
+      console.error("KV log error:", err);
     }
 
     return res.status(200).json(data);
