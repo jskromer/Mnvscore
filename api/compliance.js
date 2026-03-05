@@ -67,6 +67,10 @@ function recomputeScores(parsed) {
 }
 
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   if (rateLimit(req, res, 10)) return;
 
   if (req.method !== "POST") {
