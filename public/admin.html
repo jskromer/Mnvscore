@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MNVscore — Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Mono', monospace;
+      background: #faf8f5;
+      color: #3a3a3a;
+      padding: 32px;
+      min-height: 100vh;
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a2a3a;
+      margin-bottom: 4px;
+    }
+    .subtitle { font-size: 11px; color: #8a7e70; letter-spacing: 1px; margin-bottom: 24px; }
+    .auth-form {
+      max-width: 400px;
+      margin: 80px auto;
+      text-align: center;
+    }
+    .auth-form input {
+      width: 100%;
+      padding: 10px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      border: 1px solid #d0c8bc;
+      border-radius: 4px;
+      background: #fff;
+      margin-bottom: 12px;
+    }
+    .auth-form button, .refresh-btn {
+      background: #2a5a8a;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 24px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .auth-form button:hover, .refresh-btn:hover { background: #1a3a5c; }
+    .dashboard { max-width: 960px; margin: 0 auto; }
+    .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+    .card {
+      background: #fff;
+      border: 1px solid #e8e2da;
+      border-radius: 6px;
+      padding: 16px 20px;
+    }
+    .card-label {
+      font-size: 10px;
+      color: #8a7e70;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .card-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a2a3a;
+    }
+    .card-sub { font-size: 11px; color: #8a7e70; margin-top: 4px; }
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    .chart-box {
+      background: #fff;
+      border: 1px solid #e8e2da;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    .chart-box.full { grid-column: 1 / -1; }
+    .chart-title {
+      font-size: 11px;
+      color: #6a8aa8;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    canvas { max-height: 260px; }
+    .table-box {
+      background: #fff;
+      border: 1px solid #e8e2da;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .table-header {
+      padding: 16px 20px 12px;
+      font-size: 11px;
+      color: #6a8aa8;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th {
+      text-align: left;
+      padding: 8px 16px;
+      background: #f5f1ec;
+      color: #6a8aa8;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+    td { padding: 8px 16px; border-top: 1px solid #f0ede8; }
+    tr:hover td { background: #faf8f5; }
+    .score-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-weight: 500;
+      font-size: 11px;
+    }
+    .score-high { background: #e8f5e9; color: #2e7d32; }
+    .score-mid { background: #fff3e0; color: #e65100; }
+    .score-low { background: #fce4ec; color: #c62828; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #8a7e70;
+      font-size: 13px;
+    }
+    @media (max-width: 700px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="auth" class="auth-form">
+  <h1>MNVscore Admin</h1>
+  <p class="subtitle" style="margin-bottom:24px">SUBMISSION ANALYTICS DASHBOARD</p>
+  <input type="password" id="keyInput" placeholder="Admin key" />
+  <br />
+  <button onclick="authenticate()">Access Dashboard</button>
+  <p id="authError" style="color:#c62828; font-size:12px; margin-top:12px; display:none"></p>
+</div>
+
+<div id="dashboard" class="dashboard" style="display:none">
+  <div class="header-row">
+    <div>
+      <h1>MNVscore Analytics</h1>
+      <div class="subtitle">SUBMISSION DASHBOARD</div>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">Total Submissions</div>
+      <div class="card-value" id="totalCount">—</div>
+      <div class="card-sub" id="totalSub"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Composite Score</div>
+      <div class="card-value" id="avgComposite">—</div>
+      <div class="card-sub" id="avgCompSub"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Structural %</div>
+      <div class="card-value" id="avgStructural">—</div>
+      <div class="card-sub" id="avgStructSub"></div>
+    </div>
+    <div class="card">
+      <div class="card-label">Unique Sessions</div>
+      <div class="card-value" id="uniqueSessions">—</div>
+      <div class="card-sub" id="sessionSub"></div>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-box">
+      <div class="chart-title">Principle Averages</div>
+      <canvas id="principleChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">Source Types</div>
+      <canvas id="sourceChart"></canvas>
+    </div>
+    <div class="chart-box full">
+      <div class="chart-title">Composite Score Timeline</div>
+      <canvas id="timelineChart" style="max-height:200px"></canvas>
+    </div>
+  </div>
+
+  <div class="table-box">
+    <div class="table-header">Recent Submissions</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Source</th>
+          <th>Chars</th>
+          <th>Composite</th>
+          <th>Structural</th>
+          <th>Weakest Principle</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div id="emptyTable" class="empty-state" style="display:none">No submissions yet</div>
+  </div>
+</div>
+
+<script>
+let adminKey = '';
+let charts = {};
+
+const PRINCIPLES = ['accuracy', 'completeness', 'conservativeness', 'consistency', 'relevance', 'transparency'];
+const PRINCIPLE_COLORS = {
+  accuracy: '#2a5a8a',
+  completeness: '#3a7a5a',
+  conservativeness: '#8a5a2a',
+  consistency: '#5a3a8a',
+  relevance: '#2a8a7a',
+  transparency: '#8a2a5a',
+};
+
+function authenticate() {
+  adminKey = document.getElementById('keyInput').value.trim();
+  if (!adminKey) return;
+  loadData();
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(`/api/admin/submissions?key=${encodeURIComponent(adminKey)}&limit=200`);
+    if (res.status === 401) {
+      document.getElementById('authError').textContent = 'Invalid admin key';
+      document.getElementById('authError').style.display = 'block';
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('auth').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    render(data.submissions || []);
+  } catch (err) {
+    document.getElementById('authError').textContent = 'Connection error';
+    document.getElementById('authError').style.display = 'block';
+  }
+}
+
+function scoreBadge(val) {
+  if (val == null) return '<span class="score-badge score-low">—</span>';
+  const cls = val >= 60 ? 'score-high' : val >= 35 ? 'score-mid' : 'score-low';
+  return `<span class="score-badge ${cls}">${Math.round(val)}</span>`;
+}
+
+function render(subs) {
+  // Sort by timestamp descending
+  subs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Summary cards
+  document.getElementById('totalCount').textContent = subs.length;
+  const sessions = new Set(subs.map(s => s.session_id).filter(Boolean));
+  document.getElementById('uniqueSessions').textContent = sessions.size;
+
+  if (subs.length === 0) {
+    document.getElementById('avgComposite').textContent = '—';
+    document.getElementById('avgStructural').textContent = '—';
+    document.getElementById('emptyTable').style.display = 'block';
+    return;
+  }
+
+  const avgComp = subs.reduce((a, s) => a + (Number(s.composite) || 0), 0) / subs.length;
+  const avgStruct = subs.reduce((a, s) => a + (Number(s.structural_pct) || 0), 0) / subs.length;
+  document.getElementById('avgComposite').textContent = Math.round(avgComp);
+  document.getElementById('avgCompSub').textContent = `range: ${Math.min(...subs.map(s => Number(s.composite) || 0))}–${Math.max(...subs.map(s => Number(s.composite) || 0))}`;
+  document.getElementById('avgStructural').textContent = Math.round(avgStruct) + '%';
+  document.getElementById('avgStructSub').textContent = `range: ${Math.min(...subs.map(s => Number(s.structural_pct) || 0))}–${Math.max(...subs.map(s => Number(s.structural_pct) || 0))}%`;
+
+  const firstDate = new Date(subs[subs.length - 1].timestamp);
+  document.getElementById('totalSub').textContent = `since ${firstDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  document.getElementById('sessionSub').textContent = subs.length > 0 ? `${(subs.length / sessions.size).toFixed(1)} avg/session` : '';
+
+  // Principle averages chart
+  const principleAvgs = PRINCIPLES.map(p => {
+    const vals = subs.map(s => Number(s[p])).filter(v => !isNaN(v));
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  });
+
+  if (charts.principle) charts.principle.destroy();
+  charts.principle = new Chart(document.getElementById('principleChart'), {
+    type: 'bar',
+    data: {
+      labels: PRINCIPLES.map(p => p.charAt(0).toUpperCase() + p.slice(0, 7)),
+      datasets: [{
+        data: principleAvgs.map(v => Math.round(v * 10) / 10),
+        backgroundColor: PRINCIPLES.map(p => PRINCIPLE_COLORS[p]),
+        borderRadius: 4,
+        maxBarThickness: 48,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { font: { family: 'DM Mono', size: 10 } } },
+        x: { ticks: { font: { family: 'DM Mono', size: 10 } } },
+      }
+    }
+  });
+
+  // Source type chart
+  const sourceCounts = {};
+  subs.forEach(s => {
+    const t = s.source_type || 'unknown';
+    sourceCounts[t] = (sourceCounts[t] || 0) + 1;
+  });
+  const sourceLabels = Object.keys(sourceCounts);
+  const sourceData = Object.values(sourceCounts);
+  const sourceColors = ['#2a5a8a', '#3a7a5a', '#8a5a2a', '#5a3a8a', '#8a8a8a'];
+
+  if (charts.source) charts.source.destroy();
+  charts.source = new Chart(document.getElementById('sourceChart'), {
+    type: 'doughnut',
+    data: {
+      labels: sourceLabels.map(l => l.charAt(0).toUpperCase() + l.slice(1)),
+      datasets: [{
+        data: sourceData,
+        backgroundColor: sourceColors.slice(0, sourceLabels.length),
+        borderWidth: 2,
+        borderColor: '#fff',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { font: { family: 'DM Mono', size: 11 }, padding: 12 }
+        }
+      }
+    }
+  });
+
+  // Timeline chart
+  const timelineSubs = [...subs].reverse();
+  const timeLabels = timelineSubs.map(s => {
+    const d = new Date(s.timestamp);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+           d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  });
+
+  if (charts.timeline) charts.timeline.destroy();
+  charts.timeline = new Chart(document.getElementById('timelineChart'), {
+    type: 'line',
+    data: {
+      labels: timeLabels,
+      datasets: [
+        {
+          label: 'Composite',
+          data: timelineSubs.map(s => Number(s.composite) || 0),
+          borderColor: '#2a5a8a',
+          backgroundColor: 'rgba(42, 90, 138, 0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#2a5a8a',
+        },
+        {
+          label: 'Structural %',
+          data: timelineSubs.map(s => Number(s.structural_pct) || 0),
+          borderColor: '#3a7a5a',
+          backgroundColor: 'rgba(58, 122, 90, 0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#3a7a5a',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: { font: { family: 'DM Mono', size: 11 } }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 100, ticks: { font: { family: 'DM Mono', size: 10 } } },
+        x: { ticks: { font: { family: 'DM Mono', size: 9 }, maxRotation: 45 } },
+      }
+    }
+  });
+
+  // Table
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  if (subs.length === 0) {
+    document.getElementById('emptyTable').style.display = 'block';
+    return;
+  }
+  document.getElementById('emptyTable').style.display = 'none';
+
+  subs.forEach(s => {
+    const d = new Date(s.timestamp);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+                    d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const weakest = PRINCIPLES.reduce((min, p) => {
+      const v = Number(s[p]);
+      return (!isNaN(v) && v < min.val) ? { name: p, val: v } : min;
+    }, { name: '—', val: Infinity });
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="white-space:nowrap; color:#8a7e70">${dateStr}</td>
+      <td>${(s.source_type || 'unknown')}</td>
+      <td style="text-align:right">${Number(s.content_length).toLocaleString()}</td>
+      <td>${scoreBadge(s.composite)}</td>
+      <td>${scoreBadge(s.structural_pct)}</td>
+      <td style="color:${weakest.val < 30 ? '#c62828' : '#8a7e70'}">${weakest.name !== '—' ? weakest.name.slice(0, 10) + ' (' + Math.round(weakest.val) + ')' : '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+</script>
+</body>
+</html>
