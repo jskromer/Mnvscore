@@ -1,3 +1,5 @@
+import { rateLimit } from "./_rate-limit.js";
+
 const SYSTEM_PROMPT = `You are an expert in Measurement & Verification (M&V) methodology for energy efficiency and demand-side management programs.
 
 When given an M&V plan, methodology description, or vendor capability statement, you will analyze it across 8 dimensions:
@@ -44,6 +46,8 @@ const MAX_TOKENS = 1000;
 const MAX_INPUT_LENGTH = 15000;
 
 export default async function handler(req, res) {
+  if (rateLimit(req, res, 10)) return;
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -81,8 +85,12 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      const msg = data.error?.message || data.error || "API request failed";
-      return res.status(response.status).json({ error: msg });
+      console.error("Anthropic API error:", data.error?.message || data.error);
+      const status = response.status === 429 ? 429 : 502;
+      const msg = response.status === 429
+        ? "Analysis service is busy. Please try again in a moment."
+        : "Analysis failed. Please try again later.";
+      return res.status(status).json({ error: msg });
     }
 
     return res.status(200).json(data);
