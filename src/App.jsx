@@ -3,15 +3,7 @@ import ScoringExplainer from "./ScoringExplainer";
 import * as pdfjsLib from "pdfjs-dist";
 import pdfjsWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// Wrap the worker with a Promise.withResolvers polyfill for Safari <18.7
-const workerBlob = new Blob(
-  [
-    `if(typeof Promise.withResolvers==="undefined"){Promise.withResolvers=function(){let r,j;const p=new Promise((a,b)=>{r=a;j=b});return{promise:p,resolve:r,reject:j}}}\n`,
-    `import("${new URL(pdfjsWorkerUrl, location.origin).href}");`,
-  ],
-  { type: "text/javascript" }
-);
-pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(workerBlob);
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 const BUILD_TIMESTAMP = new Date().toLocaleString("en-US", {
   year: "numeric",
