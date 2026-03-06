@@ -59,6 +59,6 @@ npm run dev
 
 ## Author
 
-Steve Kromer, CMVP #1 — [Counterfactual Designs](https://counterfactualdesigns.com)
+Steve Kromer, CMVP #1 — [Counterfactual Designs](https://counterfactual-designs.com)
 
 First Certified Measurement & Verification Professional. Author of *The Role of the Measurement and Verification Professional* (Routledge/Taylor & Francis). Steering committee member, OpenEAC Alliance.

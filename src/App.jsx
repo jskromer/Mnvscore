@@ -1656,6 +1656,41 @@ export default function MNVScorecard() {
           </div>
         )}
       </div>
+
+      {/* Ecosystem footer */}
+      <div style={{ borderTop: "1px solid #d4cbbf", padding: "24px 32px", textAlign: "center", marginTop: 32 }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, flexWrap: "wrap", marginBottom: 16 }}>
+          <a href="https://cfdesigns.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "#b5632e", textDecoration: "none", fontWeight: 600 }}>
+            Counterfactual Designs →
+          </a>
+          <a href="https://bayesian-mv.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "#7c5cbf", textDecoration: "none", fontWeight: 600 }}>
+            Bayesian Module →
+          </a>
+          <a href="https://mv-course.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "#a67c28", textDecoration: "none", fontWeight: 600 }}>
+            IPMVP Reference →
+          </a>
+          <a href="https://mv-classmap.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "#2d7d46", textDecoration: "none", fontWeight: 600 }}>
+            Learning Path →
+          </a>
+          <a href="https://cmvp-capstone.vercel.app" target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 600 }}>
+            CMVP Capstone →
+          </a>
+        </div>
+        <div style={{ fontSize: 12, color: "#998d7e", marginBottom: 8 }}>
+          <a href="https://counterfactual-designs.com" target="_blank" rel="noopener noreferrer"
+            style={{ color: "#998d7e", textDecoration: "none" }}>
+            counterfactual-designs.com
+          </a>
+        </div>
+        <div style={{ fontSize: 11, color: "#998d7e" }}>
+          © 2025 Steve Kromer · SKEE · Based on <em>The Role of the M&V Professional</em> (River Publishers, 2024)
+        </div>
+      </div>
     </div>
   );
 }
