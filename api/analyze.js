@@ -42,7 +42,7 @@ Return ONLY valid JSON, no markdown, no explanation. Use this exact structure:
 }`;
 
 const MODEL = "claude-sonnet-4-6";
-const MAX_TOKENS = 1000;
+const MAX_TOKENS = 4000;
 const MAX_INPUT_LENGTH = 15000;
 
 export default async function handler(req, res) {
