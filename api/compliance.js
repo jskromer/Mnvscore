@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const principlesRubric = require("./rubrics/mv-principles-v1.json");
 const planChecklist = require("./rubrics/plan-checklist-v1.json");
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-sonnet-4-6";
 const MAX_TOKENS = 8000;
 const MAX_INPUT_LENGTH = 15000;
 
