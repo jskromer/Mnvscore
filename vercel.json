@@ -1,10 +1,10 @@
 {
   "functions": {
     "api/analyze.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     },
     "api/compliance.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "headers": [
