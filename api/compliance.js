@@ -132,31 +132,45 @@ export default async function handler(req, res) {
       }
     }
 
-    // Log submission metadata to Vercel KV (must await — serverless freezes after response)
+    // Log submission metadata to Vercel KV.
+    // Must await (serverless freezes after response), but capped by a timeout so a
+    // slow or archived store degrades analytics instead of hanging the function.
+    const KV_TIMEOUT_MS = 3000;
     try {
       if (scored && process.env.KV_REST_API_URL) {
-        const { kv } = await import("@vercel/kv");
-        const submissionId = crypto.randomUUID();
-        const principleScores = {};
-        const principles = scored.principle_adherence?.principles;
-        if (principles) {
-          for (const [pid, p] of Object.entries(principles)) {
-            principleScores[pid] = p.score;
+        const logWrite = (async () => {
+          const { kv } = await import("@vercel/kv");
+          const submissionId = crypto.randomUUID();
+          const principleScores = {};
+          const principles = scored.principle_adherence?.principles;
+          if (principles) {
+            for (const [pid, p] of Object.entries(principles)) {
+              principleScores[pid] = p.score;
+            }
           }
-        }
-        const record = {
-          timestamp: new Date().toISOString(),
-          source_type: req.headers["x-source-type"] || "unknown",
-          content_hash: createHash("sha256").update(content.trim()).digest("hex").slice(0, 16),
-          content_length: content.length,
-          composite: scored.principle_adherence?.composite_score ?? null,
-          structural_pct: scored.plan_completeness?.percentage ?? null,
-          ...principleScores,
-          session_id: req.headers["x-session-id"] || null,
-        };
-        await kv.hset(`submission:${submissionId}`, record);
-        await kv.lpush("submissions:index", submissionId);
-        await kv.ltrim("submissions:index", 0, 999);
+          const record = {
+            timestamp: new Date().toISOString(),
+            source_type: req.headers["x-source-type"] || "unknown",
+            content_hash: createHash("sha256").update(content.trim()).digest("hex").slice(0, 16),
+            content_length: content.length,
+            composite: scored.principle_adherence?.composite_score ?? null,
+            structural_pct: scored.plan_completeness?.percentage ?? null,
+            ...principleScores,
+            session_id: req.headers["x-session-id"] || null,
+          };
+          await Promise.all([
+            kv.hset(`submission:${submissionId}`, record),
+            kv.lpush("submissions:index", submissionId),
+          ]);
+          await kv.ltrim("submissions:index", 0, 999);
+        })();
+
+        await Promise.race([
+          logWrite,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("KV log timeout")), KV_TIMEOUT_MS)
+          ),
+        ]);
       }
     } catch (err) {
       console.error("KV log error:", err);
